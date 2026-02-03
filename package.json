@@ -1,0 +1,54 @@
+{
+	"name": "datafolder",
+	"version": "1.0.2",
+	"author": {
+		"name": "lysh",
+		"email": "datafolderdev@outlook.com"
+	},
+	"description": "datafolder is a lightweight JSON database, featuring an AI-friendly API for simple and human maintainable code generation, millisecond data response, with full index and trigger features supported, and the unique ability to browse and manage data as a folder tree directly in your browser. It works perfectly for a wide range of scenarios, from game/application backends to embedded systems to IoT to edge computing.",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/datafolderdev/datafolder"
+	},
+	"homepage": "https://github.com/datafolderdev/datafolder",
+	"bugs": {
+		"url": "https://github.com/datafolderdev/datafolder/issues",
+		"email": "datafolderdev@outlook.com"
+	},
+	"keywords": [
+		"JSON",
+		"database",
+		"AI",
+		"low-latency",
+		"tree-view",
+		"in-memory",
+		"SSD",
+		"schema-free",
+		"atomic-writes",
+		"typescript",
+		"edge",
+		"backend",
+		"gaming",
+		"iot",
+		"embed",
+		"embedded",
+		"simple",
+		"easy",
+		"quick",
+		"millisecond",
+		"lightweight"
+	],
+	"dependencies": {},
+	"devDependencies": {
+		"fastify": "^5.0.0",
+		"@fastify/compress": "^8.1.0",
+		"@fastify/express": "^4.0.2",
+		"@fastify/static": "^8.3.0"
+	},
+	"exports": "./index.js",
+	"scripts": {
+		"ui": "start http://localhost:3628/datafolderui/index.html && node ./scripts/fastify.js",
+		"airbnb": "node ./scripts/airbnb2.js && start http://localhost:3628/datafolderui/index.html && node ./scripts/fastify.js"
+	}
+}
