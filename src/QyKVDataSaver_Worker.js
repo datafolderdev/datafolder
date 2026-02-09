@@ -1,81 +1,104 @@
-let path = require("node:path"), getDefaultOptions = require("./QyDefaultOptions.js").getDefaultOptions, QyAclSaver = require("./QyAclSaver.js").QyAclSaver, QyMessageWorker = require("./QyMessageWorker.js").QyMessageWorker, QySnapshotSaver = require("./QySnapshotSaver.js").QySnapshotSaver, delCmdKey = require("./QyAcl.js").delCmdKey;
+import {
+    join as t
+} from "node:path";
 
-class QyKVDataSaver_Worker extends QyMessageWorker {
+import {
+    getDefaultOptions as e
+} from "./QyDefaultOptions.js";
+
+import {
+    QyAclSaver as n
+} from "./QyAclSaver.js";
+
+import {
+    QyMessageWorker as a
+} from "./QyMessageWorker.js";
+
+import {
+    QySnapshotSaver as o
+} from "./QySnapshotSaver.js";
+
+import {
+    delCmdKey as m
+} from "./QyAcl.js";
+
+class s extends a {
     constructor({
-        kvFolder: e,
-        options: a
+        kvFolder: a,
+        options: s
     }) {
-        super(a = {
-            ...getDefaultOptions("QyKVDataSaver_Worker"),
-            ...a
+        super(s = {
+            ...e("QyKVDataSaver_Worker"),
+            ...s
         }), Object.assign(this, {
-            kvFolder: e,
-            aclFolder: path.join(e, "acl"),
-            qyAclSaver: new QyAclSaver(this, a),
-            qySnapshotSaver: new QySnapshotSaver(this, e, a)
+            kvFolder: a,
+            aclFolder: t(a, "acl"),
+            qyAclSaver: new n(this, s),
+            qySnapshotSaver: new o(this, a, s)
         });
     }
-    start(e, a, s, t) {
+    start(a, s, t, e) {
         var {
-            qyAclSaver: r,
-            qySnapshotSaver: n
+            qyAclSaver: n,
+            qySnapshotSaver: o
         } = this;
         Object.assign(this, {
-            maxChangeId: e,
-            snapshotMaxChangeId: e,
-            currentAclNum: (s || a) + 1
-        }), r.start(this._getAclFilePath()), n.start(e, s, t);
+            maxChangeId: a,
+            snapshotMaxChangeId: a,
+            currentAclNum: (t || s) + 1
+        }), n.start(u(this)), o.start(a, t, e);
     }
     async stop() {
         var {
-            qyAclSaver: e,
-            options: a,
-            qySnapshotSaver: s,
-            currentAclNum: t,
-            maxChangeId: r,
-            snapshotMaxChangeId: n
+            qyAclSaver: a,
+            options: s,
+            qySnapshotSaver: t,
+            currentAclNum: e,
+            maxChangeId: n,
+            snapshotMaxChangeId: o
         } = this;
-        this.isStopping = !0, await e.stop(), a.saveSnapshotAtStop && n < r && (this.isSavingSnapshot && await new Promise(e => this.saveSnapshotResolve = e), 
-        logger.log(`Saving snapshot ${t} at stop.`), s.saveSnapshot(t)), await s.stop();
+        this.isStopping = !0, await a.stop(), s.saveSnapshotAtStop && o < n && (this.isSavingSnapshot && await new Promise(a => this.saveSnapshotResolve = a), 
+        logger.log(`Saving snapshot ${e} at stop.`), t.saveSnapshot(e)), await t.stop();
     }
-    callSave(e, a, s) {
-        return this._save(e, a, s, !0);
+    callSave(a, s, t) {
+        return r(this, a, s, t, !0);
     }
-    castSave(e, a, s) {
-        return this._save(e, a, s);
+    castSave(a, s, t) {
+        return r(this, a, s, t);
     }
-    releaseSnapshot(e) {
-        this.qySnapshotSaver.releaseSnapshot(e);
+    releaseSnapshot(a) {
+        this.qySnapshotSaver.releaseSnapshot(a);
     }
-    _save(e, a, s, t) {
-        var {
-            qyAclSaver: r,
-            qySnapshotSaver: n,
-            options: o,
-            snapshotMaxChangeId: h,
-            currentAclNum: i,
-            isSavingSnapshot: S
-        } = this;
-        let l;
-        return t ? l = r.callSave(e, a) : r.castSave(e, a), this._removeSyncedKeys(a, s), 
-        n.castSave(e, a, s), this.maxChangeId = e, !S && e - h >= o.snapshotMaxChangeCount && (++this.currentAclNum, 
-        r.switch(this._getAclFilePath()), n.saveSnapshot(i), Object.assign(this, {
-            snapshotMaxChangeId: e,
-            isSavingSnapshot: !0
-        })), l;
-    }
-    _removeSyncedKeys(a, s) {
-        if (s) {
-            var t = s.length;
-            for (let e = 0; e < t; e += 2) delCmdKey(a, s[e]);
-        }
-    }
-    _getAclFilePath() {
-        return path.join(this.aclFolder, this.currentAclNum + "_acl.txt");
-    }
-    onSnapshotSavedChangeId(e, a) {
-        this.isSavingSnapshot = !1, this.saveSnapshotResolve ? this.saveSnapshotResolve() : this.isStopping || this.castParent("onSnapshotSavedChangeId", e, a);
+    onSnapshotSavedChangeId(a, s) {
+        this.isSavingSnapshot = !1, this.saveSnapshotResolve ? this.saveSnapshotResolve() : this.isStopping || this.castParent("onSnapshotSavedChangeId", a, s);
     }
 }
 
-module.exports = QyKVDataSaver_Worker;
+function r(a, s, t, e, n) {
+    var {
+        qyAclSaver: o,
+        qySnapshotSaver: r,
+        options: h,
+        snapshotMaxChangeId: i,
+        currentAclNum: p,
+        isSavingSnapshot: S
+    } = a;
+    let v;
+    n ? v = o.callSave(s, t) : o.castSave(s, t);
+    var l = t, c = e;
+    if (c) {
+        var g = c.length;
+        for (let a = 0; a < g; a += 2) m(l, c[a]);
+    }
+    return r.castSave(s, t, e), a.maxChangeId = s, !S && s - i >= h.snapshotMaxChangeCount && (++a.currentAclNum, 
+    o.switch(u(a)), r.saveSnapshot(p), Object.assign(a, {
+        snapshotMaxChangeId: s,
+        isSavingSnapshot: !0
+    })), v;
+}
+
+function u(a) {
+    return t(a.aclFolder, a.currentAclNum + "_acl.txt");
+}
+
+export default s;

@@ -1,12 +1,14 @@
-let writerConfig = {
+var e = {
     append: !1,
     retryIntervalFactor: 2,
     maxRetryInterval: 60,
     emitSaveEvent: !1,
     maxFileSize: 1 / 0
-}, Default_Options = {
-    QyBaseWriter: writerConfig,
-    QyBinWriter: writerConfig,
+};
+
+let t = {
+    QyBaseWriter: e,
+    QyBinWriter: e,
     QyBatch: {
         fileLogLevel: "delta",
         maxHistoryCmdObjCount: 100
@@ -20,7 +22,8 @@ let writerConfig = {
         compactSnapshotsInterval: 6e4,
         bgLoadPosMaps: !0,
         unloadMemInterval: 12e4,
-        maxFileCountToUnload: 1e5
+        maxFileCountToUnload: 1e5,
+        compactAtStart: !0
     },
     QyCache: {
         dumpStructureAtStart: !1,
@@ -40,7 +43,8 @@ let writerConfig = {
     },
     QySnapshots: {
         pMOutdatedPercent: 30,
-        minSnapshotKeyCount: 3e3
+        minSnapshotKeyCount: 3e3,
+        compressValText: !0
     },
     QyKVDataCleaner_Worker: {
         compressRedundantFile: !1
@@ -50,10 +54,10 @@ let writerConfig = {
     }
 };
 
-function getDefaultOptions(e) {
-    return e && Default_Options[e] || void 0;
+function a(e) {
+    return e && t[e] || void 0;
 }
 
-Object.assign(module.exports, {
-    getDefaultOptions: getDefaultOptions
-});
+export {
+    a as getDefaultOptions
+};

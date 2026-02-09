@@ -1,6 +1,6 @@
 {
 	"name": "datafolder",
-	"version": "1.0.2",
+	"version": "1.0.5",
 	"author": {
 		"name": "lysh",
 		"email": "datafolderdev@outlook.com"
@@ -37,7 +37,8 @@
 		"easy",
 		"quick",
 		"millisecond",
-		"lightweight"
+		"lightweight",
+		"LSM"
 	],
 	"dependencies": {},
 	"devDependencies": {
@@ -50,5 +51,6 @@
 	"scripts": {
 		"ui": "start http://localhost:3628/datafolderui/index.html && node ./scripts/fastify.js",
 		"airbnb": "node ./scripts/airbnb2.js && start http://localhost:3628/datafolderui/index.html && node ./scripts/fastify.js"
-	}
+	},
+	"type": "module"
 }

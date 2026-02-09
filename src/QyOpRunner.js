@@ -1,29 +1,31 @@
-let EventEmitter = require("node:events"), setPromise = require("./QyUtils.js").setPromise, logger = require("./QyLogger.js").logger, getDefaultOptions = require("./QyDefaultOptions.js").getDefaultOptions, QyQueue = require("./QyQueue.js").QyQueue;
+import s from "node:events";
 
-class QyOpRunner extends EventEmitter {
-    constructor(e, s = [], t = []) {
-        super(), e = {
-            ...getDefaultOptions("QyOpRunner"),
-            ...e
+import {
+    setPromise as t
+} from "./QyUtils.js";
+
+import {
+    logger as u
+} from "./QyLogger.js";
+
+import {
+    getDefaultOptions as i
+} from "./QyDefaultOptions.js";
+
+import {
+    QyQueue as n
+} from "./QyQueue.js";
+
+class e extends s {
+    constructor(s, t = [], e = []) {
+        super(), s = {
+            ...i("QyOpRunner"),
+            ...s
         }, Object.assign(this, {
-            options: e,
+            options: s,
             running: !1,
-            opQueue: new QyQueue(e)
-        }), this._setupOpNames(s, !0), this._setupOpNames(t);
-    }
-    _setupOpNames(e, i) {
-        for (let t of e) {
-            let s = "_op_" + t;
-            this[t] || (this[t] = i ? (...e) => this.pushAndRunWithPromise({
-                opName: t,
-                opFunName: s,
-                args: e
-            }) : (...e) => this.pushAndRun({
-                opName: t,
-                opFunName: s,
-                args: e
-            })), this[s] || (this[s] = () => logger.error(`Class method ${s} not implemented.`));
-        }
+            opQueue: new n(s)
+        }), r(this, t, !0), r(this, e);
     }
     get firstOp() {
         return this.opQueue.first;
@@ -34,31 +36,31 @@ class QyOpRunner extends EventEmitter {
     finish() {
         return this.lastOp?.promise || this.runningOp?.promise;
     }
-    pushAndRunWithPromise(e) {
-        return setPromise(e), this.pushAndRun(e), e.promise;
+    pushAndRunWithPromise(s) {
+        return t(s), this.pushAndRun(s), s.promise;
     }
-    pushAndRun(...e) {
-        var s = this.opQueue, t = this.lastOp;
-        "_op_stop" === t?.opFunName ? (s.pop(), s.push(...e, t)) : s.push(...e), 
+    pushAndRun(...s) {
+        var t = this.opQueue, e = this.lastOp;
+        "_op_stop" === e?.opFunName ? (t.pop(), t.push(...s, e)) : t.push(...s), 
         this.run();
     }
     async run() {
         if (!this.running) {
             this.running = !0;
-            for (var e = this.opQueue; !e.isEmpty; ) {
-                var s = e.shift(), {
-                    opFunName: t,
+            for (var s = this.opQueue; !s.isEmpty; ) {
+                var t = s.shift(), {
+                    opFunName: e,
                     eventName: i,
                     resolve: n,
                     args: r
-                } = s;
-                if (t) {
-                    this.runningOp = s;
+                } = t;
+                if (e) {
+                    this.runningOp = t;
                     try {
-                        var u = await (r ? this[t](...r) : this[t]());
-                        n && n(u), i && this.emit(i, u);
-                    } catch (e) {
-                        logger.error(`Run ${t} failed:`, e), i && this.emit(i, e);
+                        var o = await (r ? this[e](...r) : this[e]());
+                        n && n(o), i && this.emit(i, o);
+                    } catch (s) {
+                        u.error(`Run ${e} failed:`, s), i && this.emit(i, s);
                     }
                     this.runningOp = void 0;
                 } else n && n(), i && this.emit(i);
@@ -68,6 +70,21 @@ class QyOpRunner extends EventEmitter {
     }
 }
 
-Object.assign(module.exports, {
-    QyOpRunner: QyOpRunner
-});
+function r(i, s, n) {
+    for (let e of s) {
+        let t = "_op_" + e;
+        i[e] || (i[e] = n ? (...s) => i.pushAndRunWithPromise({
+            opName: e,
+            opFunName: t,
+            args: s
+        }) : (...s) => i.pushAndRun({
+            opName: e,
+            opFunName: t,
+            args: s
+        })), i[t] || (i[t] = () => u.error(`Class method ${t} not implemented.`));
+    }
+}
+
+export {
+    e as QyOpRunner
+};

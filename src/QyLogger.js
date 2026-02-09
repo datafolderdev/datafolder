@@ -1,55 +1,64 @@
-let fs = require("node:fs"), path = require("node:path"), Console = require("node:console").Console, {
-    isMainThread,
-    threadId
-} = require("node:worker_threads"), ThreadMark = isMainThread ? "" : `W${threadId}:`, LOG_LEVEL = {
+import r from "node:fs";
+
+import n from "node:path";
+
+import {
+    Console as t
+} from "node:console";
+
+import {
+    isMainThread as e,
+    threadId as o
+} from "node:worker_threads";
+
+let i = e ? "" : `W${o}:`, s = {
     Info: 0,
     Debug: 1,
     Warn: 2,
     Error: 3,
     None: 4
-}, strToLogLevel = {
-    verbose: LOG_LEVEL.Info,
-    info: LOG_LEVEL.Info,
-    log: LOG_LEVEL.Debug,
-    debug: LOG_LEVEL.Debug,
-    warn: LOG_LEVEL.Warn,
-    error: LOG_LEVEL.Error,
-    none: LOG_LEVEL.None
-}, logLevelToStr = Object.fromEntries(Object.entries(strToLogLevel).map(([ e, o ]) => [ o, e ])), logger = {
-    currentLogLevel: LOG_LEVEL.Debug,
+}, l = {
+    verbose: s.Info,
+    info: s.Info,
+    log: s.Debug,
+    debug: s.Debug,
+    warn: s.Warn,
+    error: s.Error,
+    none: s.None
+}, a = Object.fromEntries(Object.entries(l).map(([ e, o ]) => [ o, e ])), c = {
+    currentLogLevel: s.Debug,
     info: function() {
-        logger.currentLogLevel == LOG_LEVEL.Info && writeLog("info", arguments);
+        c.currentLogLevel == s.Info && b("info", arguments);
     },
     log: function() {
-        logger.currentLogLevel <= LOG_LEVEL.Debug && writeLog("log", arguments);
+        c.currentLogLevel <= s.Debug && b("log", arguments);
     },
     debug: function() {
-        logger.currentLogLevel <= LOG_LEVEL.Debug && writeLog("debug", arguments);
+        c.currentLogLevel <= s.Debug && b("debug", arguments);
     },
     warn: function() {
-        logger.currentLogLevel <= LOG_LEVEL.Warn && writeLog("warn", arguments);
+        c.currentLogLevel <= s.Warn && b("warn", arguments);
     },
     error: function() {
-        logger.currentLogLevel <= LOG_LEVEL.Error && writeLog("error", arguments);
+        c.currentLogLevel <= s.Error && b("error", arguments);
     }
-}, fileConsole, stdout, stderr;
+}, u, g, f;
 
-function closeFileConsole() {
-    fileConsole = void 0, stdout && (stdout.close(), stdout = void 0), stderr && (stderr.close(), 
-    stderr = void 0);
+function d() {
+    u = void 0, g && (g.close(), g = void 0), f && (f.close(), f = void 0);
 }
 
-function setFileConsoleDateDirPath(e, o) {
-    closeFileConsole();
+function L(e, o) {
+    d();
     o = {
         flags: o ? "w" : "a",
         flush: !0,
         autoClose: !1
     };
-    stdout = fs.createWriteStream(path.join(e, "stdout.txt"), o), stderr = fs.createWriteStream(path.join(e, "stderr.txt"), o), 
-    fileConsole = new Console({
-        stdout: stdout,
-        stderr: stderr,
+    g = r.createWriteStream(n.join(e, "stdout.txt"), o), f = r.createWriteStream(n.join(e, "stderr.txt"), o), 
+    u = new t({
+        stdout: g,
+        stderr: f,
         inspectOptions: {
             depth: 3,
             colors: !1
@@ -57,20 +66,22 @@ function setFileConsoleDateDirPath(e, o) {
     });
 }
 
-function writeLog(e, o) {
-    var r = new Error().stack.split("\n"), r = `${new Date().toISOString()} ${ThreadMark}${/([^/\\()]+)\)?$/.exec(r[3])[1]}:${e}:`;
-    console[e](r, ...o), fileConsole && fileConsole[e](r, ...o);
+function b(e, o) {
+    var r = new Error().stack.split("\n"), r = `${new Date().toISOString()} ${i}${/([^/\\()]+)\)?$/.exec(r[3])[1]}:${e}:`;
+    console[e](r, ...o), u && u[e](r, ...o);
 }
 
-Object.defineProperty(logger, "level", {
+Object.defineProperty(c, "level", {
     get() {
-        return logLevelToStr[logger.currentLogLevel];
+        return a[c.currentLogLevel];
     },
     set(e) {
-        logger.currentLogLevel = strToLogLevel[e];
+        c.currentLogLevel = l[e];
     }
-}), globalThis.logger = logger, Object.assign(module.exports, {
-    logger: logger,
-    setFileConsoleDateDirPath: setFileConsoleDateDirPath,
-    closeFileConsole: closeFileConsole
-});
+}), globalThis.logger = c;
+
+export {
+    c as logger,
+    L as setFileConsoleDateDirPath,
+    d as closeFileConsole
+};

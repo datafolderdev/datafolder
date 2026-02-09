@@ -11,33 +11,29 @@ datafolder is a lightweight JSON database, featuring an AI-friendly API for simp
 ## How to use
 
 ```javascript
-const DataFolder = require("datafolder");
+import DataFolder from "datafolder";
 const dataFolder = new DataFolder(); //Specify where to store the data. Default is ./data/sampleDataFolder
-await dataFolder.start();
-dataFolder.insert("users/2026/user_0001", {
+await dataFolder.start(); //start() and stop() are the only two async places. All other code doesn't need await.
+dataFolder.insert("traindata/2026/1/20/chat_0001", {
   userid: "user_0001",
   email: "a@b.com",
-  score: 5,
+  feedbackScore: 5,
   address: { city: "a", zipcode: 123 },
 });
-dataFolder.insert("users/2026/user_0002", {
-  userid: "user_0002",
-  email: "c@b.com",
-  score: 3,
-  address: { city: "b", zipcode: 321 },
-});
-const { email, password, address, score } = dataFolder.view("users/2026/user_0002");
+dataFolder.insert("traindata/2026/1/20/chat_0001/prompt", "What is async/await?");
+dataFolder.insert("traindata/2026/1/20/chat_0001/answer", "async/await is ...");
+const { email, password, address, feedbackScore } = dataFolder.view("traindata/2026/1/20/chat_0001");
 address.zipcode = 678;
-dataFolder.insert("users/2026/user_0002", { score: score + 1, address });
+dataFolder.insert("traindata/2026/1/20/chat_0001", { feedbackScore: feedbackScore + 1, address });
 await dataFolder.stop();
 ```
 
 Or operate with dir/file objects:
 
 ```javascript
-const file = dataFolder.file("users/2026/user_0002");
-const { score, address } = file.view({ score: 1, address: 1 });
-dataFolder.insert(file, { score: score + 1, address: { city: "c", zipcode: 663 } });
+const file = dataFolder.file("traindata/2026/1/20/chat_0001");
+const { feedbackScore, address } = file.view({ feedbackScore: 1, address: 1 });
+dataFolder.insert(file, { feedbackScore: feedbackScore + 1, address: { city: "c", zipcode: 663 } });
 ```
 
 ## Features
@@ -75,7 +71,7 @@ const { email, address } = dataFolder.view("path/to/file", { email: 1, addres: 1
 
 ```javascript
 dataFolder.insert("path/to/file", { email: newEmail, address: { zipcode: newZipcode } });
-dataFolder.insert(file, { score: score + 1 });
+dataFolder.insert(file, { feedbackScore: feedbackScore + 1 });
 ```
 
 #### Delete
@@ -91,14 +87,15 @@ dataFolder.remove(file, { email: 1, address: { zipcode: 1 } });
 ### 2. Batch APIs
 
 ```javascript
-const [dir, file, { email, score }] = dataFolder.fetch
+const [dir, file, { email, feedbackScore }] = dataFolder.fetch
   .dir("path/to/dir")
   .file("path/to/file")
   .view("path/to/file")
   .run();
 dataFolder.batch
-  .insert("path/to/file", { email: "email1@a.b.com" })
-  .insert("path/to/file", { email: "email2", score: 100 })
+  .insert("path/to/chat_details", { user: "user_0001", feedbackScore: 100 })
+  .insert("path/to/prompt", "what is LLM?")
+  .insert("path/to/answer", "LLM is AI...")
   .remove("path/to/file", { address: { city: 1 } })
   .run();
 ```
@@ -106,8 +103,23 @@ dataFolder.batch
 ### 3. Powerful Query Support. Auto Create Needed Indexes
 
 ```javascript
+// get all the training data in year 2026 with feedbackScore between 60 and 85.
+dataFolder.queryFiles("traindata/2026/**", { feedbackScore: (x) => x >= 60 && x <= 85 });
+
+// get training data of user_001 from July to Oct in year 2025, 2026 with feedbackScore higher than 90.
+dataFolder.queryFiles(["traindata", { $in: [2025, 2026] }, { $gt: 6, $lte: 10 }], {
+  feedbackScore: { $gt: 90 },
+  userId: "user_0001",
+});
+
 dataFolder.queryFiles("flights/**", { _from: "airports/LAX" });
-dataFolder.queryFiles(["flights", "*", 1, (x) => x >= 5 && x <= 7], {
+dataFolder.queryFiles(["flights", "*", "jan", (x) => x >= 5 && x <= 7], {
+  $or: [{ _from: "airports/BIS" }, { _to: "airports/BIS" }],
+});
+dataFolder.queryFiles(["flights", "*", "feb", { $or: [5, 6, 7] }], {
+  $or: [{ _from: "airports/BIS" }, { _to: "airports/BIS" }],
+});
+dataFolder.queryFiles(["flights", "*", "mar", { $gte: 5, lte: 7 }], {
   $or: [{ _from: "airports/BIS" }, { _to: "airports/BIS" }],
 });
 dataFolder.queryFilesMulti([
@@ -119,23 +131,23 @@ dataFolder.queryFilesMulti([
 ### 4. Flexible Trigger Support to Monitor Any Changes
 
 ```javascript
-function onEmailChanged({ studentId, email }) {
-  const { oldValue, newValue } = email;
-  // Logic to handle email change.
+function onPromptScoreChanged({ promptId, feedbackScore }) {
+  const { oldValue, newValue } = feedbackScore;
+  // Logic to handle prompt feedback score change.
 }
-dataFolder.insertTrigger("emailChanged", "students/{studentId}", "email");
-dataFolder.on("emailChanged", onEmailChanged);
-dataFolder.insert("students/student1", { email: "email1" });
-dataFolder.insert("students/student2", { email: "email2" });
-dataFolder.insert("students/student1", { email: "email1_changed" });
+dataFolder.insertTrigger("promptScoreChanged", "traindata/{promptId}", "feedbackScore");
+dataFolder.on("promptScoreChanged", onPromptScoreChanged);
+dataFolder.insert("traindata/prompt_1", { feedbackScore: 80 });
+dataFolder.insert("traindata/prompt_2", { feedbackScore: 63 });
+dataFolder.insert("traindata/prompt_1", { feedbackScore: 32 });
 ```
 
 Will trigger the following calls:
 
 ```javascript
-onEmailChanged({ studentId: "student1", email: { oldValue: undefined, newValue: "email1" } });
-onEmailChanged({ studentId: "student2", email: { oldValue: undefined, newValue: "email2" } });
-onEmailChanged({ studentId: "student1", email: { oldValue: "email1", newValue: "email1_changed" } });
+onPromptScoreChanged({ promptId: "student1", feedbackScore: { oldValue: undefined, newValue: 80 } });
+onPromptScoreChanged({ promptId: "student2", feedbackScore: { oldValue: undefined, newValue: 63 } });
+onPromptScoreChanged({ promptId: "student1", feedbackScore: { oldValue: 80, newValue: 32 } });
 ```
 
 ## Example

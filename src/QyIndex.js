@@ -1,237 +1,215 @@
-let {
-    pathSplit,
-    isSimpleType,
-    isFunction,
-    isString,
-    isNotNullObj,
-    SpecialOperators,
-    getSuffix,
-    fromSingleName,
-    toSingleName
-} = require("./QyUtils.js"), getValByNamePath = require("./QyFileContentUtils.js").getValByNamePath, QyUnionNode = require("./QyUnionNode.js").QyUnionNode, QyIntersectNode = require("./QyIntersectNode.js").QyIntersectNode, isArray = Array.isArray, {
-    $or,
-    $and
-} = SpecialOperators, Empty_Union_Node = new QyUnionNode();
+import {
+    pathSplit as a,
+    isSimpleType as d,
+    isFunction as g,
+    isString as s,
+    isNotNullObj as c,
+    SpecialOperators as i,
+    getSuffix as p,
+    fromSingleName as r,
+    toSingleName as o
+} from "./QyUtils.js";
 
-function getIndexPropPaths(e) {
-    if (null != e && !isString(e)) return _getIndexPropPaths_rec(e, e = {}, [], 0), 
-    Object.keys(e).map(e => fromSingleName(e));
+import {
+    getValByNamePath as v
+} from "./QyFileContentUtils.js";
+
+import {
+    QyUnionNode as m
+} from "./QyUnionNode.js";
+
+import {
+    QyIntersectNode as y
+} from "./QyIntersectNode.js";
+
+let h = Array.isArray, {
+    $or: b,
+    $and: S
+} = i, N = new m(), l = [];
+
+function e(e) {
+    if (null != e && !s(e)) return function r(i, n, t, l) {
+        if (H(i)) 0 < t.length && (n[o(t)] = 1); else {
+            let e = i[b] || i[S];
+            if (null != e) if (h(e)) for (var f of e) r(f, n, t, l), t.length = l; else r(e, n, t, l), 
+            t.length = l; else for (var u in i) t.push(u), r(i[u], n, t, l + 1), 
+            t.length = l;
+        }
+    }(e, e = {}, [], 0), Object.keys(e).map(e => r(e));
 }
 
-function calDifferenceList(e, r, i, t, n, l) {
-    t = getValByNamePath(t, r), n = getValByNamePath(n, r);
-    if (t !== n) {
-        var o, a, s, u, l = isArray(n) || isArray(getValByNamePath(l, r)), f = Object.fromEntries(_itemToPropValList(t, l).map(e => [ JSON.stringify(e), e ])), d = Object.fromEntries(_itemToPropValList(n, l).map(e => [ JSON.stringify(e), e ])), c = [], y = [];
-        for (o in f) d[o] || (a = f[o], (a = e.searchSubdir(a)) && (a = a.getFile(i)) && y.push(a));
-        for (s in d) f[s] || (u = d[s], u = e.searchOrCreateSubdir(u), c.push(u.getOrCreateFile(i)));
+function n(e, r, i, n, t, l) {
+    n = v(n, r), t = v(t, r);
+    if (n !== t) {
+        var f, u, o, a, l = h(t) || h(v(l, r)), s = Object.fromEntries(R(n, l).map(e => [ JSON.stringify(e), e ])), d = Object.fromEntries(R(t, l).map(e => [ JSON.stringify(e), e ])), g = [], c = [];
+        for (f in s) d[f] || (u = s[f], (u = e.searchSubdir(u)) && (u = u.getFile(i)) && c.push(u));
+        for (o in d) s[o] || (a = d[o], a = e.searchOrCreateSubdir(a), g.push(a.getOrCreateFile(i)));
         return {
-            toAddFileList: c,
-            toDelFileList: y
+            toAddFileList: g,
+            toDelFileList: c
         };
     }
 }
 
-function parseNamePathAndQuery(e, r, i, t, n, l) {
-    if (isString(t) || isNotNullObj(t)) if (e.isDir) _queryIndexHostDir(e, i, t, n, l); else {
-        var o = e.$or;
-        if (o) {
-            for (var a of o) if (parseNamePathAndQuery(a, r, i, t, n, l), l?.isFull) return;
-        } else for (var s of _getMatchedDirs(e = isString(e) ? pathSplit(e) : e, r)) if (_queryIndexHostDir(s, i, t, n, l), 
-        l?.isFull) return;
+function $(e, r, i, n, t, l) {
+    if (s(n) || c(n)) if (e.isDir) L(e, i, n, t, l); else {
+        var f = e.$or;
+        if (f) {
+            for (var u of f) if ($(u, r, i, n, t, l), l?.isFull) return;
+        } else for (var o of F(e = s(e) ? a(e) : e, r)) if (L(o, i, n, t, l), l?.isFull) return;
     }
 }
 
-function* _getMatchedDirs(e, r, i = 0) {
-    i == e.length ? yield r : yield* _getMatchedDirsWithPattern(e, e[i], r, i);
-}
-
-function* _getMatchedDirsWithPattern(e, r, i, t) {
-    if ("**" == r) {
-        i.isHiddenFolder || (yield i);
-        for (var n of i.allSubdirs()) yield n;
-    } else if ("*" == r) for (var l of i.subdirList) yield* _getMatchedDirs(e, l, t + 1); else if (isFunction(r)) for (var o of i.subdirList) r(o.name) && (yield* _getMatchedDirs(e, o, t + 1)); else if (isArray(r)) for (var a of r) yield* _getMatchedDirsWithPattern(e, a, i, t); else {
-        var s = r.$or;
-        if (s) for (var u of s) yield* _getMatchedDirsWithPattern(e, u, i, t); else {
-            s = i.getSubdir(r);
-            s && (yield* _getMatchedDirs(e, s, t + 1));
+function* F(e, r, i = 0) {
+    i == e.length ? yield r : yield* function* r(i, n, t, l) {
+        if (null == n) return;
+        if ("**" == n) {
+            t.isHiddenFolder || (yield t);
+            for (var e of t.allSubdirs()) yield e;
+        } else if ("*" == n) for (var f of t.subdirList) yield* F(i, f, l + 1); else if (g(n)) for (var u of t.filterSubdirNames(n)) yield* F(i, u, l + 1); else if (h(n)) for (var o of n) yield* r(i, o, t, l); else {
+            let e = n.$or || n.$in;
+            if (h(e)) for (var a of e) yield* r(i, a, t, l); else if (j(n)) for (var s of C(t, n)) yield* F(i, s, l + 1); else {
+                let e = t.getSubdir(n);
+                e && (yield* F(i, e, l + 1));
+            }
         }
-    }
+    }(e, e[i], r, i);
 }
 
-function _queryIndexHostDir(r, i, t, n, l) {
-    var o = r.fileCount;
-    if (!(o <= 0)) {
+function L(r, i, n, t, l) {
+    var f = r.fileCount;
+    if (!(f <= 0)) {
         let e = 0;
-        if (isString(t)) {
-            var a = r.getFile(t);
-            a && l.countOne() && (n.push(a), ++e);
+        if (s(n)) {
+            var u = r.getFile(n);
+            u && l.countOne() && (t.push(u), ++e);
         } else {
-            var s, a = r.qyCache, i = (0 < i?.length && a.qyDB.createIndex(r, i), 
-            a.getIndexDir(r));
+            var o, u = r.qyCache, i = (0 < i?.length && u.qyDB.createIndex(r, i), 
+            u.getIndexDir(r));
             if (!i) return;
-            for (s in _constructQueryNode(i, t).getFileMap(l)) n.push(r.getFile(s)), 
-            ++e;
+            for (o of function i(n, e) {
+                if (null == e) return N;
+                if (d(e)) return new m(n.getSubdir(e));
+                if (g(e)) return O(n.filterSubdirNames(e));
+                if (j(e)) return O(C(n, e));
+                let {
+                    $link: t,
+                    $spec: l
+                } = e;
+                if (null != t) {
+                    let e = new m(), {
+                        qyCache: r,
+                        subdirList: i
+                    } = n;
+                    for (var f of i) D(r, t, f.name, l) && e.addDir(f);
+                    return e;
+                }
+                let u = new y();
+                if (h(e)) for (var r of e) u.addNode(i(n, r)); else for (var o in e) {
+                    let r = e[o];
+                    if (o == b) if (h(r)) {
+                        let e = new m();
+                        for (var a of r) e.addNode(i(n, a));
+                        u.addNode(e);
+                    } else u.addNode(i(n, r)); else if (o == S) if (h(r)) for (var s of r) u.addNode(i(n, s)); else u.addNode(i(n, r)); else {
+                        let e = n.getSubdir(o);
+                        if (null == e) return N;
+                        u.addNode(i(e, r));
+                    }
+                }
+                return u;
+            }(i, n).getFiles(l)) t.push(r.getFile(o)), ++e;
         }
-        logger.info(`Checking ${o} file${getSuffix(o)}, result: ${e} file` + getSuffix(e));
+        logger.info(`Checking ${f} file${p(f)}, result: ${e} file` + p(e));
     }
 }
 
-function _isValidSimpleValue(e) {
+function u(e) {
     var r = typeof e;
-    return "number" == r || "boolean" == r || "string" == r && !(e in SpecialOperators);
+    return "number" == r || "boolean" == r || "string" == r && !(e in i);
 }
 
-function _filterSubdirs(e, r) {
-    var i, t = new QyUnionNode();
-    for (i of e.subdirList) r(i.name) && t.addDir(i);
-    return t;
-}
-
-function _filterSubdirsHtoL(e, r) {
-    var i = e.sortedSubdirList, t = new QyUnionNode();
-    for (let e = i.length - 1; 0 <= e; --e) {
-        var n = i[e], l = n.nameNum;
-        if (!isNaN(l)) {
-            if (!r(l)) break;
-            t.addDir(n);
-        }
-    }
-    return t;
-}
-
-function _filterSubdirsLtoH(e, r) {
-    var i = e.sortedSubdirList, t = new QyUnionNode();
-    for (let e = 0; e < i.length; ++e) {
-        var n = i[e], l = n.nameNum;
-        if (!isNaN(l)) {
-            if (!r(l)) break;
-            t.addDir(n);
-        }
-    }
-    return t;
-}
-
-function _isSimpleQueryObj(e) {
-    var r, i, t;
-    return !(null != e && !isSimpleType(e) && !isFunction(e)) || ({
-        $gt: e,
-        $lt: r,
-        $gte: i,
-        $lte: t
-    } = e, null != (e ?? r ?? i ?? t));
-}
-
-function _getIndexPropPaths_rec(e, r, i, t) {
-    if (_isSimpleQueryObj(e)) 0 < i.length && (r[toSingleName(i)] = 1); else {
-        var n = e[$or] || e[$and];
-        if (null != n) if (isArray(n)) for (var l of n) _getIndexPropPaths_rec(l, r, i, t), 
-        i.length = t; else _getIndexPropPaths_rec(n, r, i, t), i.length = t; else for (var o in e) i.push(o), 
-        _getIndexPropPaths_rec(e[o], r, i, t + 1), i.length = t;
-    }
-}
-
-function _constructComparingNode(e, r, i, t, n) {
-    if (null != r && null != i && (i <= r ? i = void 0 : r = void 0), null != n && null != t && (n <= t ? t = void 0 : n = void 0), 
-    null != r) if (null != n) {
-        if (r < n) return _filterSubdirs(e, e => r < e && e < n);
-    } else {
-        if (null == t) return _filterSubdirsHtoL(e, e => r < e);
-        if (r < t) return _filterSubdirs(e, e => r < e && e <= t);
-    } else if (null != i) if (null != n) {
-        if (i < n) return _filterSubdirs(e, e => i <= e && e < n);
-    } else {
-        if (null == t) return _filterSubdirsHtoL(e, e => i <= e);
-        if (i < t) return _filterSubdirs(e, e => i <= e && e <= t);
-        if (i == t) return new QyUnionNode(e.getSubdir(i));
-    } else {
-        if (null != n) return _filterSubdirsLtoH(e, e => e < n);
-        if (null != t) return _filterSubdirsLtoH(e, e => e <= t);
-    }
-    return Empty_Union_Node;
-}
-
-function _matchObj(r, i, t) {
-    if (null == i) return !1;
-    if (isSimpleType(t)) return isArray(i) ? i.includes(t) : isNotNullObj(i) ? i[t] : i == t;
-    if (isFunction(t)) return t(i);
-    if (isArray(t)) {
-        if (isArray(i)) {
-            for (let e = 0; e < t.length; ++e) if (!_matchObj(r, i[e], t[e])) return !1;
-            return !0;
-        }
-        return !1;
-    }
-    var e, {
-        $link: n,
-        $spec: l
-    } = t;
-    if (n) {
-        if (isSimpleType(i)) return _matchLink(r, n, i, l);
-        if (isArray(i)) {
-            for (var o of i) if (_matchLink(r, n, o, l)) return !0;
-        } else for (var a in i) if (_matchLink(r, n, a, l)) return !0;
-        return !1;
-    }
-    if (isSimpleType(i) || isArray(i)) return !1;
-    for (e in t) if (!_matchObj(r, i[e], t[e])) return !1;
-    return !0;
-}
-
-function _matchLink(e, r, i, t) {
-    var r = e.getDir(r);
-    return !!r && !!(r = r.getFile(i)) && (null == t || _matchObj(e, r.fileContent, t));
-}
-
-function _constructQueryNode(e, r) {
-    if (null == r) return Empty_Union_Node;
-    if (isSimpleType(r)) return new QyUnionNode(e.getSubdir(r));
-    if (isFunction(r)) return _filterSubdirs(e, r);
-    var {
-        $gt: i,
-        $lt: t,
-        $gte: n,
-        $lte: l
-    } = r;
-    if (null != (i ?? t ?? n ?? l)) return _constructComparingNode(e, i, n, l, t);
-    var {
-        $link: o,
-        $spec: a
-    } = r;
-    if (null != o) {
-        var s, u = new QyUnionNode(), {
-            qyCache: f,
-            subdirList: i
-        } = e;
-        for (s of i) _matchLink(f, o, s.name, a) && u.addDir(s);
-        return u;
-    }
-    var d = new QyIntersectNode();
-    if (isArray(r)) for (var c of r) d.addNode(_constructQueryNode(e, c)); else for (var y in r) {
-        var g = r[y];
-        if (y == $or) if (isArray(g)) {
-            var _, N = new QyUnionNode();
-            for (_ of g) N.addNode(_constructQueryNode(e, _));
-            d.addNode(N);
-        } else d.addNode(_constructQueryNode(e, g)); else if (y == $and) if (isArray(g)) for (var h of g) d.addNode(_constructQueryNode(e, h)); else d.addNode(_constructQueryNode(e, g)); else {
-            y = e.getSubdir(y);
-            if (null == y) return Empty_Union_Node;
-            d.addNode(_constructQueryNode(y, g));
-        }
-    }
-    return d;
-}
-
-function _itemToPropValList(e, r, i = [], t = [], n = 0) {
-    if (null != e) if (_isValidSimpleValue(e = isNotNullObj(e) && r ? Object.values(e) : e)) t[n] = e, 
-    t.length = n + 1, i.push([ ...t ]); else if (isArray(e)) {
-        t.length = n + 1;
-        for (var l of e.filter(e => _isValidSimpleValue(e))) t[n] = l, i.push([ ...t ]);
-    } else if (isNotNullObj(e)) for (var o in e) t[n] = o, t.length = n + 1, _itemToPropValList(e[o], !1, i, t, n + 1);
+function O(e) {
+    if (0 == e.length) return N;
+    var r, i = new m();
+    for (r of e) i.addDir(r);
     return i;
 }
 
-Object.assign(module.exports, {
-    calDifferenceList: calDifferenceList,
-    getIndexPropPaths: getIndexPropPaths,
-    parseNamePathAndQuery: parseNamePathAndQuery
-});
+function j(e) {
+    return null != e && null != (e.$gt ?? e.$lt ?? e.$gte ?? e.$lte);
+}
+
+function H(e) {
+    return null == e || d(e) || g(e) || j(e);
+}
+
+function C(e, {
+    $gt: r,
+    $gte: i,
+    $lte: n,
+    $lt: t
+}) {
+    if (null != r && null != i && (i <= r ? i = void 0 : r = void 0), null != t && null != n && (t <= n ? n = void 0 : t = void 0), 
+    null != r) if (null != t) {
+        if (r < t) return e.compareSubdirRangeL2H(e => r < e && e < t);
+    } else {
+        if (null == n) return e.compareSubdirRangeH2L(e => r < e);
+        if (r < n) return e.compareSubdirRangeL2H(e => r < e && e <= n);
+    } else if (null != i) if (null != t) {
+        if (i < t) return e.compareSubdirRangeL2H(e => i <= e && e < t);
+    } else {
+        if (null == n) return e.compareSubdirRangeH2L(e => i <= e);
+        if (i < n) return e.compareSubdirRangeL2H(e => i <= e && e <= n);
+        if (i == n) return [ e.getSubdir(i) ];
+    } else {
+        if (null != t) return e.compareSubdirRangeL2H(e => e < t);
+        if (null != n) return e.compareSubdirRangeL2H(e => e <= n);
+    }
+    return l;
+}
+
+function D(e, r, i, n) {
+    var r = e.getDir(r);
+    return !!r && !!(r = r.getFile(i)) && (null == n || function r(i, n, t) {
+        if (null == n) return !1;
+        if (d(t)) return h(n) ? n.includes(t) : c(n) ? n[t] : n == t;
+        if (g(t)) return t(n);
+        if (h(t)) {
+            if (h(n)) {
+                for (let e = 0; e < t.length; ++e) if (!r(i, n[e], t[e])) return !1;
+                return !0;
+            }
+            return !1;
+        }
+        var e, {
+            $link: l,
+            $spec: f
+        } = t;
+        if (l) {
+            if (d(n)) return D(i, l, n, f);
+            if (h(n)) {
+                for (var u of n) if (D(i, l, u, f)) return !0;
+            } else for (var o in n) if (D(i, l, o, f)) return !0;
+            return !1;
+        }
+        if (d(n) || h(n)) return !1;
+        for (e in t) if (!r(i, n[e], t[e])) return !1;
+        return !0;
+    }(e, r.fileContent, n));
+}
+
+function R(e, r, i = [], n = [], t = 0) {
+    if (null != e) if (u(e = c(e) && r ? Object.values(e) : e)) n[t] = e, n.length = t + 1, 
+    i.push([ ...n ]); else if (h(e)) {
+        n.length = t + 1;
+        for (var l of e.filter(e => u(e))) n[t] = l, i.push([ ...n ]);
+    } else if (c(e)) for (var f in e) n[t] = f, n.length = t + 1, R(e[f], !1, i, n, t + 1);
+    return i;
+}
+
+export {
+    n as calDifferenceList,
+    e as getIndexPropPaths,
+    $ as parseNamePathAndQuery
+};

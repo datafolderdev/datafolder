@@ -1,16 +1,16 @@
-let Error_No_Such_File = new Error("No such file");
+let o = new Error("No such file");
 
 module.exports = ({
     filePath: e,
     cChangeId: n
 }) => {
-    var l, r, t, e = qyDB.fileP(e);
+    var t, l, i, e = qyDB.fileP(e);
     return e ? ({
         fileContent: e,
-        cChangeId: l,
-        fileContentKey: r
-    } = e, t = {}, n != l && (Object.assign(t, {
+        cChangeId: t,
+        fileContentKey: l
+    } = e, i = {}, n != t && (Object.assign(i, {
         fileContent: e,
-        cChangeId: l
-    }), null == n) && (t.fileContentKey = r), t) : Error_No_Such_File;
+        cChangeId: t
+    }), null == n) && (i.fileContentKey = l), i) : o;
 };

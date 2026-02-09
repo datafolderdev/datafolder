@@ -1,17 +1,23 @@
-let QyMessager = require("./QyMessager.js").QyMessager, getDefaultOptions = require("./QyDefaultOptions.js").getDefaultOptions;
+import {
+    QyMessager as s
+} from "./QyMessager.js";
 
-class QySnapshotSaver extends QyMessager {
-    constructor(e, s, a) {
-        super(e, "QySnapshotSaver_Worker.js", {
-            kvFolder: s,
+import {
+    getDefaultOptions as o
+} from "./QyDefaultOptions.js";
+
+class e extends s {
+    constructor(s, e, a) {
+        super(s, "QySnapshotSaver_Worker.js", {
+            kvFolder: e,
             options: a = {
-                ...getDefaultOptions("QySnapshotSaver"),
+                ...o("QySnapshotSaver"),
                 ...a
             }
         }, a, [], [ "saveSnapshot", "castSave", "releaseSnapshot" ]);
     }
 }
 
-Object.assign(module.exports, {
-    QySnapshotSaver: QySnapshotSaver
-});
+export {
+    e as QySnapshotSaver
+};

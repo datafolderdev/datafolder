@@ -1,26 +1,36 @@
-let getDefaultOptions = require("./QyDefaultOptions.js").getDefaultOptions, QyMessageWorker = require("./QyMessageWorker.js").QyMessageWorker, QyBinWriter = require("./QyBinWriter.js").QyBinWriter;
+import {
+    getDefaultOptions as s
+} from "./QyDefaultOptions.js";
 
-class QyLogFileSaver_Worker extends QyMessageWorker {
-    constructor(e) {
-        super(e = {
-            ...getDefaultOptions("QyLogFileSaver_Worker"),
-            ...e
+import {
+    QyMessageWorker as t
+} from "./QyMessageWorker.js";
+
+import {
+    QyBinWriter as r
+} from "./QyBinWriter.js";
+
+class i extends t {
+    constructor(t) {
+        super(t = {
+            ...s("QyLogFileSaver_Worker"),
+            ...t
         }), Object.assign(this, {
-            qyBinWriter: new QyBinWriter(e)
+            qyBinWriter: new r(t)
         });
     }
-    async start(e) {
-        await this.qyBinWriter.start(e);
+    async start(t) {
+        await this.qyBinWriter.start(t);
     }
     async stop() {
         await this.qyBinWriter.stop();
     }
-    async switch(e) {
-        await this.qyBinWriter.switch(e);
+    async switch(t) {
+        await this.qyBinWriter.switch(t);
     }
-    save(e, r) {
-        this.qyBinWriter.save(e, r);
+    save(t, s) {
+        this.qyBinWriter.save(t, s);
     }
 }
 
-module.exports = QyLogFileSaver_Worker;
+export default i;

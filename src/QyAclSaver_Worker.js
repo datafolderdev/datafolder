@@ -1,29 +1,35 @@
-let QyMessageWorker = require("./QyMessageWorker.js").QyMessageWorker, QyAclWriter = require("./QyAclWriter.js").QyAclWriter;
+import {
+    QyMessageWorker as t
+} from "./QyMessageWorker.js";
 
-class QyAclSaver_Worker extends QyMessageWorker {
-    constructor(r) {
-        super(r), Object.assign(this, {
-            options: r,
-            qyAclWriter: new QyAclWriter({
+import {
+    QyAclWriter as s
+} from "./QyAclWriter.js";
+
+class r extends t {
+    constructor(t) {
+        super(t), Object.assign(this, {
+            options: t,
+            qyAclWriter: new s({
                 append: !0
             })
         });
     }
-    async start(r) {
-        await this.qyAclWriter.start(r);
+    async start(t) {
+        await this.qyAclWriter.start(t);
     }
     async stop() {
         await this.qyAclWriter.stop();
     }
-    switch(r) {
-        this.qyAclWriter.switch(r);
+    switch(t) {
+        this.qyAclWriter.switch(t);
     }
-    async callSave(r, e) {
-        await this.qyAclWriter.save(r, e, !0);
+    async callSave(t, s) {
+        await this.qyAclWriter.save(t, s, !0);
     }
-    castSave(r, e) {
-        this.qyAclWriter.save(r, e);
+    castSave(t, s) {
+        this.qyAclWriter.save(t, s);
     }
 }
 
-module.exports = QyAclSaver_Worker;
+export default r;

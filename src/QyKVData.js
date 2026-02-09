@@ -1,64 +1,139 @@
-let path = require("node:path"), fsPromises = require("node:fs/promises"), getDefaultOptions = require("./QyDefaultOptions.js").getDefaultOptions, QyKVDataSaver = require("./QyKVDataSaver.js").QyKVDataSaver, QySnapshotCompactor = require("./QySnapshotCompactor.js").QySnapshotCompactor, QyKVDataCleaner = require("./QyKVDataCleaner.js").QyKVDataCleaner, {
-    arrayLast,
-    readBufferAsync,
-    sleep
-} = require("./QyUtils.js"), Idle = 1, WaitForCompactUpdates = 2, WaitForSnapshotSaved = 3;
+import {
+    join as n
+} from "node:path";
 
-class QyKVData {
-    constructor(a, t, s) {
-        t = {
-            ...getDefaultOptions("QyKVData"),
-            ...t
+import {
+    open as v
+} from "node:fs/promises";
+
+import {
+    getDefaultOptions as e
+} from "./QyDefaultOptions.js";
+
+import {
+    QyKVDataSaver as p
+} from "./QyKVDataSaver.js";
+
+import {
+    QySnapshotCompactor as i
+} from "./QySnapshotCompactor.js";
+
+import {
+    QyKVDataCleaner as r
+} from "./QyKVDataCleaner.js";
+
+import {
+    arrayLast as y,
+    readBufferAsync as g,
+    sleep as c
+} from "./QyUtils.js";
+
+class t {
+    constructor(t, a, o) {
+        a = {
+            ...e("QyKVData"),
+            ...a
         };
-        var o = path.join(a, "snapshot");
+        var s = n(t, "snapshot");
         Object.assign(this, {
-            qyCache: s,
-            options: t,
-            kvFolder: a,
-            snapshotFolder: o,
-            qyKVDataSaver: new QyKVDataSaver(this, a, t),
-            qySnapshotCompactor: new QySnapshotCompactor(this, a, t),
-            qyKVDataCleaner: new QyKVDataCleaner(this, a, t),
-            compactState: Idle,
+            qyCache: o,
+            options: a,
+            kvFolder: t,
+            snapshotFolder: s,
+            qyKVDataSaver: new p(this, t, a),
+            qySnapshotCompactor: new i(this, t, a),
+            qyKVDataCleaner: new r(this, t, a),
+            compactState: 1,
             compactMaxChangeId: 0,
             snapshotSavedChangeId: 0,
             snapshotInfoNumList: [],
             emptySnapshotNumList: []
         });
     }
-    start(a, t, s, o) {
+    start(t, a, o, s) {
         var {
-            options: e,
-            qyKVDataSaver: n,
+            options: n,
+            qyKVDataSaver: e,
             qySnapshotCompactor: p,
             qyKVDataCleaner: i
-        } = this, n = (n.start(a, s.maxSnapshotNum, t, o), p.start(), i.start(), 
-        setInterval(() => this._compactSnapshots(), e.compactSnapshotsInterval)), t = setInterval(() => this._unloadMemory(), e.unloadMemInterval);
+        } = this, {
+            maxSnapshotNum: r,
+            snapshotMaxChangeId: h
+        } = o, e = (e.start(t, r, a, s), p.start(), i.start(), setInterval(() => l(this), n.compactSnapshotsInterval)), r = setInterval(() => (async o => {
+            if (!o.unloadingMemory) {
+                o.unloadingMemory = !0;
+                var {
+                    qyCache: s,
+                    options: n
+                } = o;
+                let t = 0, a = 0;
+                if (s) {
+                    var e, p = n.maxFileCountToUnload, n = s.rootDir;
+                    a = m(o, n), t = a;
+                    for (e of n.allLoadedSubdirs()) if ((a += m(o, e)) > p && (t += a, 
+                    a = 0, await c(0), o.isStopping)) break;
+                }
+                t += a, global.gc && global.gc(), o.unloadingMemory = !1;
+            }
+        })(this), n.unloadMemInterval);
         return Object.assign(this, {
-            maxChangeId: a,
-            qySnapshots: s,
-            aclKeyValueMap: o,
-            compactInterval: n,
-            unloadInterval: t
-        }), e.bgLoadPosMaps && this._bgLoadPosMaps(), this;
+            maxChangeId: t,
+            snapshotSavedChangeId: h,
+            qySnapshots: o,
+            aclKeyValueMap: s,
+            compactInterval: e,
+            unloadInterval: r
+        }), n.bgLoadPosMaps ? (async t => {
+            for (var a of Object.keys(t.qySnapshots.numToSnapshotMap).sort((t, a) => a - t)) {
+                if (await async function e(p, i, r, h, c, l) {
+                    if (p.isStopping) return void (l && l.close());
+                    let m = p.qySnapshots;
+                    let u = m.numToSnapshotMap;
+                    let d = u[i];
+                    if (!d) return void (l && l.close());
+                    let {
+                        info: S,
+                        prefixPM: f
+                    } = d;
+                    r = r || Object.keys(f).sort().reverse();
+                    if (0 == r.length) return void (l && l.close());
+                    if (null == h || h != S.pMVersion) return l && l.close(), c = m.getPMFilePath(d), 
+                    e(p, i, r, S.pMVersion, c, await v(c));
+                    for (;0 < r.length; ) {
+                        let s = y(r), n = f[s];
+                        if (n) {
+                            let [ t, a ] = n, o = await g(c, l, t, a);
+                            if (p.isStopping || !u[i]) return void l.close();
+                            if (h != S.pMVersion) return l.close(), e(p, i, r);
+                            s in f && m.loadPartialPosMapBuffer(d, s, o);
+                        }
+                        r.pop();
+                    }
+                    l.close();
+                    logger.info("bgLoadPosMap:" + i);
+                }(t, a), t.isStopping) break;
+                if (await c(0), t.isStopping) break;
+            }
+            !t.isStopping && t.options.compactAtStart && l(t);
+        })(this) : n.compactAtStart && l(this), this;
     }
     async stop() {
         this.isStopping = !0;
         var {
-            qyKVDataSaver: a,
-            qySnapshotCompactor: t,
-            qySnapshots: s,
-            compactInterval: o,
-            unloadInterval: e,
-            qyKVDataCleaner: n
+            qyKVDataSaver: t,
+            qySnapshotCompactor: a,
+            qySnapshots: o,
+            compactInterval: s,
+            unloadInterval: n,
+            qyKVDataCleaner: e
         } = this;
-        clearInterval(o), clearInterval(e), await a.stop(), s && s.closeAllFDs(), 
-        await t.stop(), await n.stop();
+        clearInterval(s), clearInterval(n), await t.stop(), o && o.closeAllFDs(), 
+        await a.stop(), await e.stop();
     }
-    save(a, t, s, o) {
-        var e = this.qyKVDataSaver;
-        if (o) return e.callSave(a, t, s);
-        e.castSave(a, t, s);
+    save(t, a, o, s) {
+        var n = this.qyKVDataSaver;
+        if (s) return n.callSave(t, a, o);
+        n.castSave(t, a, o);
     }
     increaseChangeId() {
         return ++this.maxChangeId;
@@ -66,224 +141,183 @@ class QyKVData {
     decreaseChangeId() {
         --this.maxChangeId;
     }
-    getValueSync(a) {
+    getValueSync(t) {
         var {
-            qySnapshots: t,
-            aclKeyValueMap: s
+            qySnapshots: a,
+            aclKeyValueMap: o
         } = this;
-        return a in s ? s[a] : t.getValueSync(a);
+        return t in o ? o[t] : a.getValueSync(t);
     }
-    removeKey(a) {
+    removeKey(t) {
         var {
-            qySnapshots: t,
-            aclKeyValueMap: s
+            qySnapshots: a,
+            aclKeyValueMap: o
         } = this;
-        if (!(a in s)) return t.removeKey(a);
-        s[a] = void 0;
+        if (!(t in o)) return a.removeKey(t);
+        o[t] = void 0;
     }
-    onSnapshotSavedChangeId(a, t) {
-        this.snapshotSavedChangeId = a, this.compactState == WaitForSnapshotSaved && a >= this.compactMaxChangeId && this._finishCompactUpdates(), 
-        t && (this._addPMOnlySnapshot(t), this.qyKVDataSaver.releaseSnapshot(t.snapshotNum));
-    }
-    onCompactUpdates(a) {
-        this.compactState == WaitForCompactUpdates && (this._processCompactUpdates(a), 
-        this.snapshotSavedChangeId >= this.compactMaxChangeId ? this._finishCompactUpdates() : this.compactState = WaitForSnapshotSaved);
-    }
-    _addPMOnlySnapshot(a) {
-        var t, s = this.qySnapshots, o = s.keyToSnapshotMap;
-        for (t in a.posMap) {
-            var e = o[t];
-            e && s.removeKeyFromSnapshot(e, t);
-        }
-        s.addMaxSnapshot(a), logger.info("addPMOnlySnapshot: " + s.snapshotMaxChangeId);
-    }
-    _finishCompactUpdates() {
-        var {
-            qySnapshotCompactor: a,
-            qyKVDataCleaner: t,
-            snapshotInfoNumList: s,
-            emptySnapshotNumList: o
-        } = this;
-        a.saveSnapshotInfos(s), (s.length = 0) < o.length && (t.removeSnapshotsFiles(o), 
-        o.length = 0), this.compactState = Idle;
-    }
-    _processCompactUpdates(a) {
-        var {
-            pMUpdates: a,
-            vLUpdates: t,
-            combineUpdate: s
-        } = a;
-        a && this._processPMUpdates(a), t && this._processVLUpdates(t), s && this._processCombineUpdate(s);
-    }
-    _processCombineUpdate(a) {
-        var {
-            qySnapshots: o,
-            snapshotInfoNumList: t,
-            emptySnapshotNumList: s
-        } = this, {
-            numToSnapshotMap: e,
-            keyToSnapshotMap: n
-        } = o;
-        let {
-            snapshotNum: p,
-            combinedSnapshotNumList: i,
-            posMap: r
-        } = a;
-        var h, c = e[p];
-        let {
-            posMap: l,
-            info: d
-        } = c;
-        for (h in l) l[h] = r[h];
-        this._countLVCompact(c);
-        let u = d.totalCount, m = c.outdatedCount;
-        for (let s of i) {
-            var S, y = e[s];
-            let {
-                posMap: a,
-                info: t
-            } = y;
-            for (S in a) l[S] = r[S], n[S] = c;
-            this._countLVCompact(y), u += t.totalCount, m += y.outdatedCount, o.delSnapshot(y);
-        }
-        s.push(...i), (u == m ? s : (++d.pMVersion, ++d.vLVersion, d.totalCount = u, 
-        c.outdatedCount = m, t)).push(p);
-    }
-    _processVLUpdates(a) {
-        var t, {
-            qySnapshots: s,
-            snapshotInfoNumList: o,
-            emptySnapshotNumList: e
-        } = this, n = s.numToSnapshotMap;
-        for (t in a) {
-            var p = n[t];
-            if (s.isEmptySnapshot(p)) s.delSnapshot(p), e.push(t); else {
-                var i, r, {
-                    posMap: h,
-                    prefixPM: c
-                } = a[t], {
-                    posMap: l,
-                    prefixPM: d,
-                    info: u
-                } = p;
-                for (i in l) l[i] = h[i];
-                for (r in d) d[r] = c[r];
-                ++u.pMVersion, ++u.vLVersion, this._countLVCompact(p), o.push(t);
+    onSnapshotSavedChangeId(t, a) {
+        if (this.snapshotSavedChangeId = t, 3 == this.compactState && t >= this.compactMaxChangeId && (w(this), 
+        this.compactState = 1), a) {
+            var o, t = a, s = this.qySnapshots, n = s.keyToSnapshotMap;
+            for (o in t.posMap) {
+                var e = n[o];
+                e && s.removeKeyFromSnapshot(e, o);
             }
+            s.addMaxSnapshot(t), logger.info("addPMOnlySnapshot: " + s.snapshotMaxChangeId), 
+            this.qyKVDataSaver.releaseSnapshot(a.snapshotNum);
         }
     }
-    _countLVCompact(a) {
-        var {
-            info: t,
-            compactOutedCount: s
-        } = a;
-        t.totalCount -= t.outdatedCount + s, t.outdatedCount = 0, a.outdatedCount -= s, 
-        a.compactOutedCount = 0;
-    }
-    _countPMCompact(a) {
-        var {
-            info: t,
-            compactOutedCount: s
-        } = a;
-        t.outdatedCount += s, a.outdatedCount -= s, a.compactOutedCount = 0;
-    }
-    _processPMUpdates(a) {
-        var t, {
-            qySnapshots: s,
-            snapshotInfoNumList: o,
-            emptySnapshotNumList: e
-        } = this, n = s.numToSnapshotMap;
-        for (t in a) {
-            var p = n[t];
-            if (s.isEmptySnapshot(p)) s.delSnapshot(p), e.push(t); else {
-                var i, r = a[t], {
-                    prefixPM: h,
-                    info: c
-                } = p;
-                for (i in h) h[i] = r[i];
-                ++c.pMVersion, this._countPMCompact(p), o.push(t);
-            }
-        }
-    }
-    _compactSnapshots() {
-        if (this.compactState == Idle) {
-            var {
-                maxChangeId: a,
-                qySnapshots: t,
-                qySnapshotCompactor: s
-            } = this, {
-                emptySnapshotNumList: t,
-                pMCompactSnapshotList: o,
-                vLCompactSnapshotList: e,
-                combiningSnapshotList: n
-            } = t.calOutdates();
-            if (0 < t.length && this.emptySnapshotNumList.push(...t), 0 < n.length || 0 < o.length || 0 < e.length) {
-                Object.assign(this, {
-                    compactState: WaitForCompactUpdates,
-                    compactMaxChangeId: a
-                });
-                for (var p of [ o, e, n ]) for (var i of p) i.compactOutedCount = i.outdatedCount;
-                s.compactSnapshots(o, e, n);
-            }
-        }
-    }
-    async _bgLoadPosMaps() {
-        for (var a of Object.keys(this.qySnapshots.numToSnapshotMap).sort((a, t) => t - a)) {
-            if (await this._bgLoadPosMap(a), this.isStopping) break;
-            if (await sleep(0), this.isStopping) break;
-        }
-    }
-    async _bgLoadPosMap(a, t, s, o, e) {
-        if (this.isStopping) e && e.close(); else {
-            var n = this.qySnapshots, p = n.numToSnapshotMap, i = p[a];
-            if (i) {
-                var {
-                    info: r,
-                    prefixPM: h
-                } = i;
-                if (0 == (t = t || Object.keys(h).sort().reverse()).length) e && e.close(); else {
-                    if (null == s || s != r.pMVersion) return e && e.close(), o = n.getPMFilePath(i), 
-                    this._bgLoadPosMap(a, t, r.pMVersion, o, await fsPromises.open(o));
-                    for (;0 < t.length; ) {
-                        var c = arrayLast(t), l = h[c];
-                        if (l) {
-                            var [ l, d ] = l, l = await readBufferAsync(o, e, l, d);
-                            if (this.isStopping || !p[a]) return void e.close();
-                            if (s != r.pMVersion) return e.close(), this._bgLoadPosMap(a, t);
-                            c in h && n.loadPartialPosMapBuffer(i, c, l);
-                        }
-                        t.pop();
+    onCompactUpdates(t) {
+        if (2 == this.compactState) {
+            var u = this, {
+                pMUpdates: t,
+                vLUpdates: d,
+                combineUpdate: S
+            } = t = t;
+            if (t) {
+                var a, o = t, {
+                    qySnapshots: s,
+                    snapshotInfoNumList: n,
+                    emptySnapshotNumList: e
+                } = u, p = s.numToSnapshotMap;
+                for (a in o) {
+                    var i = p[a];
+                    if (s.isEmptySnapshot(i)) s.delSnapshot(i), e.push(a); else {
+                        var r, h = o[a], {
+                            prefixPM: c,
+                            info: l
+                        } = i;
+                        for (r in c) c[r] = h[r];
+                        ++l.pMVersion, (t => {
+                            var {
+                                info: a,
+                                compactOutedCount: o
+                            } = t;
+                            a.outdatedCount += o, t.outdatedCount -= o, t.compactOutedCount = 0;
+                        })(i), n.push(a);
                     }
-                    e.close(), logger.info("bgLoadPosMap:" + a);
                 }
-            } else e && e.close();
-        }
-    }
-    async _unloadMemory() {
-        if (!this.unloadingMemory) {
-            this.unloadingMemory = !0;
-            var {
-                qyCache: s,
-                options: o
-            } = this;
-            let a = 0, t = 0;
-            if (s) {
-                var e, n = o.maxFileCountToUnload, o = s.rootDir;
-                t = this._unloadDirFilesMem(o), a = t;
-                for (e of o.allLoadedSubdirs()) if ((t += this._unloadDirFilesMem(e)) > n && (a += t, 
-                t = 0, await sleep(0), this.isStopping)) break;
             }
-            a += t, global.gc && global.gc(), this.unloadingMemory = !1;
+            if (d) {
+                var m, f = d, {
+                    qySnapshots: v,
+                    snapshotInfoNumList: y,
+                    emptySnapshotNumList: g
+                } = t = u, C = v.numToSnapshotMap;
+                for (m in f) {
+                    var M = C[m];
+                    if (v.isEmptySnapshot(M)) v.delSnapshot(M), g.push(m); else {
+                        var I, q, {
+                            posMap: V,
+                            prefixPM: L
+                        } = f[m], {
+                            posMap: K,
+                            prefixPM: x,
+                            info: D
+                        } = M;
+                        for (I in K) K[I] = V[I];
+                        for (q in x) x[q] = L[q];
+                        ++D.pMVersion, ++D.vLVersion, j(M), y.push(m);
+                    }
+                }
+            }
+            if (S) {
+                var b, d = S;
+                let {
+                    qySnapshots: s,
+                    snapshotInfoNumList: t,
+                    emptySnapshotNumList: a
+                } = u, {
+                    numToSnapshotMap: n,
+                    keyToSnapshotMap: e
+                } = s, {
+                    snapshotNum: o,
+                    combinedSnapshotNumList: p,
+                    posMap: i
+                } = d, r = n[o], {
+                    posMap: h,
+                    info: c
+                } = r;
+                for (b in h) h[b] = i[b];
+                j(r);
+                let l = c.totalCount, m = r.outdatedCount;
+                for (let o of p) {
+                    var N, O = n[o];
+                    let {
+                        posMap: t,
+                        info: a
+                    } = O;
+                    for (N in t) h[N] = i[N], e[N] = r;
+                    j(O), l += a.totalCount, m += O.outdatedCount, s.delSnapshot(O);
+                }
+                a.push(...p), (l == m ? a : (++c.pMVersion, ++c.vLVersion, c.totalCount = l, 
+                r.outdatedCount = m, t)).push(o);
+            }
+            this.snapshotSavedChangeId >= this.compactMaxChangeId ? (w(this), this.compactState = 1) : this.compactState = 3;
         }
-    }
-    _unloadDirFilesMem(a) {
-        var t = this.qySnapshots.snapshotMaxChangeId;
-        let s = 0;
-        if (a.fileMapLoaded) for (var o of a.fileList) ++s, o.cChangeId <= t && (o.visited ? o.visited = !1 : o.unloadFileContent());
-        return s;
     }
 }
 
-Object.assign(module.exports, {
-    QyKVData: QyKVData
-});
+function j(t) {
+    var {
+        info: a,
+        compactOutedCount: o
+    } = t;
+    a.totalCount -= a.outdatedCount + o, a.outdatedCount = 0, t.outdatedCount -= o, 
+    t.compactOutedCount = 0;
+}
+
+function l(t) {
+    if (1 == t.compactState) {
+        var {
+            maxChangeId: a,
+            qySnapshots: o,
+            qySnapshotCompactor: s
+        } = t, {
+            emptySnapshotNumList: o,
+            pMCompactSnapshotList: n,
+            vLCompactSnapshotList: e,
+            combiningSnapshotList: p
+        } = o.calOutdates();
+        if (0 < p.length || 0 < n.length || 0 < e.length) {
+            Object.assign(t, {
+                compactState: 2,
+                compactMaxChangeId: a
+            });
+            for (var i of [ n, e, p ]) for (var r of i) r.compactOutedCount = r.outdatedCount;
+            s.compactSnapshots(n, e, p);
+        }
+        0 < o.length && (t.emptySnapshotNumList.push(...o), t.snapshotSavedChangeId >= a ? h(t) : 1 == t.compactState && Object.assign(t, {
+            compactState: 3,
+            compactMaxChangeId: a
+        }));
+    }
+}
+
+function m(t, a) {
+    var o = t.qySnapshots.snapshotMaxChangeId;
+    let s = 0;
+    if (a.fileMapLoaded) for (var n of a.fileList) ++s, n.cChangeId <= o && (n.visited ? n.visited = !1 : n.unloadFileContent());
+    return s;
+}
+
+function h(t) {
+    var {
+        qyKVDataCleaner: t,
+        emptySnapshotNumList: a
+    } = t;
+    0 < a.length && (t.removeSnapshotsFiles(a), a.length = 0);
+}
+
+function w(t) {
+    var {
+        qySnapshotCompactor: a,
+        snapshotInfoNumList: o
+    } = t;
+    0 < o.length && (a.saveSnapshotInfos(o), o.length = 0), h(t);
+}
+
+export {
+    t as QyKVData
+};

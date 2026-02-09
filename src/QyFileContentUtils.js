@@ -1,175 +1,172 @@
-let {
-    isNotNullObj,
-    arrayLast,
-    trimArrayTail,
-    isSimpleType,
-    SpecialOperators
-} = require("./QyUtils.js"), isArray = Array.isArray, {
-    $del,
-    $rpl,
-    $ext
-} = SpecialOperators;
+import {
+    isNotNullObj as f,
+    arrayLast as u,
+    trimArrayTail as V,
+    isSimpleType as h,
+    SpecialOperators as n
+} from "./QyUtils.js";
 
-function mergeContent(e, n) {
-    if (null == n) return e;
-    if (n !== $del) {
-        if (isSimpleType(n)) return n;
-        var r = n[$rpl];
+let m = Array.isArray, {
+    $del: y,
+    $rpl: p,
+    $ext: w
+} = n;
+
+function i(n, e) {
+    if (null == e) return n;
+    if (e !== y) {
+        if (h(e)) return e;
+        var r = e[p];
         if (null != r) return r;
-        if (null == e || isSimpleType(e)) return n;
-        if (e != n) {
-            var l, t = isArray(e);
-            for (l in n) {
-                var a = mergeContent(e[l], n[l]);
-                null == a ? (delete e[l], t && trimArrayTail(e)) : e[l] = a;
+        if (null == n || h(n)) return e;
+        if (n != e) {
+            var l, t = m(n);
+            for (l in e) {
+                var u = i(n[l], e[l]);
+                null == u ? (delete n[l], t && V(n)) : n[l] = u;
             }
         }
-        return e;
+        return n;
     }
 }
 
-function mergeContentChanges(e, n) {
-    if (n == $del) return $del;
-    if (null != n[$rpl]) return n;
-    var r = e[$rpl];
-    if (null != r) e[$rpl] = mergeContent(r, n); else {
-        if (e == $del) return {
-            [$rpl]: cleanContent(n)
+function a(n, e) {
+    if (e == y) return y;
+    if (null != e[p]) return e;
+    var r = n[p];
+    if (null != r) n[p] = i(r, e); else {
+        if (n == y) return {
+            [p]: S(e)
         };
-        if (isSimpleType(e) || isSimpleType(n)) return n;
-        for (var l in n) {
-            var t = n[l], a = e[l];
-            e[l] = null == a ? t : mergeContentChanges(a, t);
+        if (h(n) || h(e)) return e;
+        for (var l in e) {
+            var t = e[l], u = n[l];
+            n[l] = null == u ? t : a(u, t);
         }
     }
-    return e;
+    return n;
 }
 
-function mergeContentAndGenDelta(e, n) {
+function e(n, e) {
     let r = {
         oldValue: {},
         newValue: {}
     };
-    e = _mergeContentAndGenDelta_rec(e, n, [], 0, r);
-    return r.oldValue = cleanContent(r.oldValue, !0, !0), r.newValue = cleanContent(r.newValue, !1, !1), 
+    n = C(n, e, [], 0, r);
+    return r.oldValue = S(r.oldValue, !0, !0), r.newValue = S(r.newValue, !1, !1), 
     {
-        merged: e,
+        merged: n,
         delta: r = r.oldValue || r.newValue ? r : void 0
     };
 }
 
-function _mergeArrayOrObj(e, n, r, l, t) {
-    if (e != n) {
-        var a, i = isArray(e);
-        for (a in n) {
-            r[l] = a, r.length = l + 1;
-            var u = _mergeContentAndGenDelta_rec(e[a], n[a], r, l + 1, t);
-            null == u ? (delete e[a], i && trimArrayTail(e)) : e[a] = u;
+function C(e, r, l, t, u) {
+    if (null == r) return e;
+    if (r !== y) {
+        if (null == e || h(e) || h(r)) return A(e, r, l, u);
+        var i = r[p];
+        if (null != i) return A(e, i, l, u);
+        let n = r[w];
+        if (null != n) return m(n) || (n = [ n ]), (m(e) ? (e, r, n, l) => {
+            r = S(r);
+            var t = {};
+            for (let n = 0; n < r.length; ++n) {
+                var u = r[n];
+                null != u && (t[n + e.length] = h(u) ? u : {
+                    [p]: u
+                });
+            }
+            return N(l, n, e, t), e.concat(r);
+        } : A)(e, n, l, u);
+        if (m(e) && !m(r) || !m(e) && m(r)) return A(e, r, l, u);
+        var a = e, f = r, o = l, v = t, s = u;
+        if (a != f) {
+            var d, c = m(a);
+            for (d in f) {
+                o[v] = d, o.length = v + 1;
+                var g = C(a[d], f[d], o, v + 1, s);
+                null == g ? (delete a[d], c && V(a)) : a[d] = g;
+            }
         }
+        return a;
     }
-    return e;
+    null != e && N(u, l, e, y);
 }
 
-function _mergeContentAndGenDelta_rec(n, r, l, t, a) {
-    if (null == r) return n;
-    if (r !== $del) {
-        if (null == n || isSimpleType(n) || isSimpleType(r)) return _genRpl(n, r, l, a);
-        var i = r[$rpl];
-        if (null != i) return _genRpl(n, i, l, a);
-        let e = r[$ext];
-        return null != e ? (isArray(e) || (e = [ e ]), (isArray(n) ? _genExt : _genRpl)(n, e, l, a)) : isArray(n) && !isArray(r) || !isArray(n) && isArray(r) ? _genRpl(n, r, l, a) : _mergeArrayOrObj(n, r, l, t, a);
+function A(n, e, r, l) {
+    e = S(e);
+    return n === e ? n : null != e ? (null == n ? N(l, r, 0 == r.length ? void 0 : null, h(e) ? e : {
+        [p]: e
+    }) : N(l, r, n, h(n) ? e : {
+        [p]: e
+    }), e) : void N(l, r, n, y);
+}
+
+function N(n, e, r, l) {
+    n.oldValue = t(n.oldValue, e, r), n.newValue = t(n.newValue, e, l);
+}
+
+function t(n, e, r) {
+    if (!e || 0 == e.length) return r;
+    let l = n;
+    for (let n = 0; n < e.length - 1; ++n) {
+        var t = e[n];
+        f(l[t]) || (l[t] = {}), l = l[t];
     }
-    null != n && setDeltaValues(a, l, n, $del);
+    return l[u(e)] = r, n;
 }
 
-function _genExt(n, r, e, l) {
-    r = cleanContent(r);
-    var t = {};
-    for (let e = 0; e < r.length; ++e) {
-        var a = r[e];
-        null != a && (t[e + n.length] = isSimpleType(a) ? a : {
-            [$rpl]: a
-        });
-    }
-    return setDeltaValues(l, e, n, t), n.concat(r);
-}
-
-function _genRpl(e, n, r, l) {
-    n = cleanContent(n);
-    return e === n ? e : null != n ? (null == e ? setDeltaValues(l, r, 0 == r.length ? void 0 : null, isSimpleType(n) ? n : {
-        [$rpl]: n
-    }) : setDeltaValues(l, r, e, isSimpleType(e) ? n : {
-        [$rpl]: n
-    }), n) : void setDeltaValues(l, r, e, $del);
-}
-
-function setDeltaValues(e, n, r, l) {
-    e.oldValue = setValByNamePath(e.oldValue, n, r), e.newValue = setValByNamePath(e.newValue, n, l);
-}
-
-function setValByNamePath(e, n, r) {
-    if (!n || 0 == n.length) return r;
-    let l = e;
-    for (let e = 0; e < n.length - 1; ++e) {
-        var t = n[e];
-        isNotNullObj(l[t]) || (l[t] = {}), l = l[t];
-    }
-    return l[arrayLast(n)] = r, e;
-}
-
-function getValByNamePath(e, n) {
-    if (null != n && null != (e = _getValFromObj(e))) {
-        if (!isArray(n)) return "" == n ? e : _getValFromObj(e[n]);
-        if (0 != n.length && (1 != n.length || "" != n[0])) for (var r of n) if (null == (e = _getValFromObj(e[r]))) return;
-        return e;
+function r(n, e) {
+    if (null != e && null != (n = l(n))) {
+        if (!m(e)) return "" == e ? n : l(n[e]);
+        if (0 != e.length && (1 != e.length || "" != e[0])) for (var r of e) if (null == (n = l(n[r]))) return;
+        return n;
     }
 }
 
-function _getValFromObj(e) {
-    if (null != e && e != $del) {
-        for (;null != e[$rpl]; ) if ((e = e[$rpl]) == $del) return;
-        return e;
+function l(n) {
+    if (null != n && n != y) {
+        for (;null != n[p]; ) if ((n = n[p]) == y) return;
+        return n;
     }
 }
 
-function cleanContent(e, n = !0, r = !1) {
-    return _cleanContent_rec(e, n, r);
+function S(n, e = !0, r = !1) {
+    return function r(l, t, u) {
+        if (l instanceof Date) return l.toISOString();
+        if (!f(l)) return (u ? void 0 === l : null == l) || t && l === y ? void 0 : l;
+        if (t) {
+            let n = l[p];
+            if (null != n) return r(n, t, u);
+            let e = l[w];
+            if (null != e) return r(m(e) ? e : [ e ], t, u);
+        }
+        let e = m(l);
+        let i = !0;
+        for (var a in l) {
+            let n = r(l[a], t, u);
+            (u ? void 0 === n : null == n) ? (delete l[a], e && V(l)) : (l[a] = n, 
+            i = !1);
+        }
+        return i ? void 0 : l;
+    }(n, e, r);
 }
 
-function _cleanContent_rec(e, n, r) {
-    if (e instanceof Date) return e.toISOString();
-    if (!isNotNullObj(e)) return (r ? void 0 === e : null == e) || n && e === $del ? void 0 : e;
-    if (n) {
-        var l = e[$rpl];
-        if (null != l) return _cleanContent_rec(l, n, r);
-        l = e[$ext];
-        if (null != l) return _cleanContent_rec(isArray(l) ? l : [ l ], n, r);
+function o(n) {
+    if (h(n)) return n ? y : void 0;
+    for (var e in n) {
+        var r = o(n[e]);
+        r ? n[e] = r : delete n[e];
     }
-    var t, a = isArray(e);
-    let i = !0;
-    for (t in e) {
-        var u = _cleanContent_rec(e[t], n, r);
-        (r ? void 0 === u : null == u) ? (delete e[t], a && trimArrayTail(e)) : (e[t] = u, 
-        i = !1);
-    }
-    return i ? void 0 : e;
+    return m(n) && V(n), n;
 }
 
-function objToDelMarks(e) {
-    if (isSimpleType(e)) return e ? $del : void 0;
-    for (var n in e) {
-        var r = objToDelMarks(e[n]);
-        r ? e[n] = r : delete e[n];
-    }
-    return isArray(e) && trimArrayTail(e), e;
-}
-
-Object.assign(module.exports, {
-    mergeContent: mergeContent,
-    mergeContentAndGenDelta: mergeContentAndGenDelta,
-    mergeContentChanges: mergeContentChanges,
-    setValByNamePath: setValByNamePath,
-    getValByNamePath: getValByNamePath,
-    cleanContent: cleanContent,
-    objToDelMarks: objToDelMarks
-});
+export {
+    i as mergeContent,
+    e as mergeContentAndGenDelta,
+    a as mergeContentChanges,
+    t as setValByNamePath,
+    r as getValByNamePath,
+    S as cleanContent,
+    o as objToDelMarks
+};

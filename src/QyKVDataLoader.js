@@ -1,65 +1,86 @@
-let fsPromises = require("node:fs/promises"), path = require("node:path"), folderOrFileExists = require("./QyUtils.js").folderOrFileExists, readAclBuffer = require("./QyAcl.js").readAclBuffer, QySnapshots = require("./QySnapshots.js").QySnapshots, getDefaultOptions = require("./QyDefaultOptions.js").getDefaultOptions;
+import {
+    readFile as u,
+    readdir as x
+} from "node:fs/promises";
 
-class QyKVDataLoader {
-    constructor(a, e) {
-        e = {
-            ...getDefaultOptions("QyKVDataLoader"),
-            ...e
+import {
+    join as o
+} from "node:path";
+
+import {
+    folderOrFileExists as g
+} from "./QyUtils.js";
+
+import {
+    readAclBuffer as M
+} from "./QyAcl.js";
+
+import {
+    QySnapshots as e
+} from "./QySnapshots.js";
+
+import {
+    getDefaultOptions as r
+} from "./QyDefaultOptions.js";
+
+class a {
+    constructor(a, s) {
+        s = {
+            ...r("QyKVDataLoader"),
+            ...s
         };
-        var s = path.join(a, "snapshot");
+        var t = o(a, "snapshot");
         Object.assign(this, {
             kvFolder: a,
-            options: e,
-            aclFolder: path.join(a, "acl"),
-            snapshotFolder: s,
+            options: s,
+            aclFolder: o(a, "acl"),
+            snapshotFolder: t,
             loadedMaxAclNum: 0,
             aclKeyValueMap: {},
-            qySnapshots: new QySnapshots(s, e)
+            qySnapshots: new e(t, s)
         });
     }
     async load() {
-        var a = this.qySnapshots, [ e ] = await Promise.all([ this._listAclFiles(), a.loadSnapshotInfos() ]);
+        var a = this.qySnapshots, [ s ] = await Promise.all([ (async a => {
+            if (a = a.aclFolder, await g(a)) return (await x(a)).filter(a => /^[1-9]/.test(a)).map(a => parseInt(a));
+        })(this), a.loadSnapshotInfos() ]);
         let {
-            maxSnapshotNum: s,
-            snapshotMaxChangeId: t
+            maxSnapshotNum: t,
+            snapshotMaxChangeId: o
         } = a;
-        this.maxChangeId = t, e && await this._loadAclFiles(e.filter(a => a > s));
+        if (this.maxChangeId = o, s) {
+            var e = this, r = s.filter(a => a > t), {
+                aclKeyValueMap: l,
+                qySnapshots: i,
+                options: s
+            } = (r.sort((a, s) => a - s), e), n = s.autoRepairAclFile, p = await Promise.all(r.map(async a => u(F(e, a))));
+            for (let a = 0; a < r.length; ++a) {
+                var d = r[a], m = F(e, d), m = await M(m, p[a], n, e.maxChangeId);
+                if (0 < m.length) {
+                    for (var [ h, c ] of m) i.applyCmdObj(c, l), e.maxChangeId = h;
+                    e.loadedMaxAclNum = d;
+                }
+            }
+            await 0;
+        }
         var {
-            maxChangeId: e,
-            loadedMaxAclNum: l,
-            aclKeyValueMap: i
+            maxChangeId: s,
+            loadedMaxAclNum: f,
+            aclKeyValueMap: y
         } = this;
         return {
-            maxChangeId: e,
-            loadedMaxAclNum: l,
+            maxChangeId: s,
+            loadedMaxAclNum: f,
             qySnapshots: a,
-            aclKeyValueMap: i
+            aclKeyValueMap: y
         };
-    }
-    async _loadAclFiles(e) {
-        e.sort((a, e) => a - e);
-        var {
-            aclKeyValueMap: s,
-            qySnapshots: t,
-            options: a
-        } = this, l = a.autoRepairAclFile, i = await Promise.all(e.map(async a => fsPromises.readFile(this._getAclFilePath(a))));
-        for (let a = 0; a < e.length; ++a) {
-            var r = e[a], o = this._getAclFilePath(r), o = await readAclBuffer(o, i[a], l, this.maxChangeId);
-            if (0 < o.length) {
-                for (var [ n, h ] of o) t.applyCmdObj(h, s), this.maxChangeId = n;
-                this.loadedMaxAclNum = r;
-            }
-        }
-    }
-    async _listAclFiles() {
-        var a = this.aclFolder;
-        if (await folderOrFileExists(a)) return (await fsPromises.readdir(a)).filter(a => /^[1-9]/.test(a)).map(a => parseInt(a));
-    }
-    _getAclFilePath(a) {
-        return path.join(this.aclFolder, a + "_acl.txt");
     }
 }
 
-Object.assign(module.exports, {
-    QyKVDataLoader: QyKVDataLoader
-});
+function F(a, s) {
+    return o(a.aclFolder, s + "_acl.txt");
+}
+
+export {
+    a as QyKVDataLoader
+};

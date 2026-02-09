@@ -1,43 +1,55 @@
-let {
-    open,
-    rm
-} = require("node:fs/promises"), assert = require("node:assert/strict"), QyDB = require("../src/QyDB.js").QyDB, folderOrFileExists = require("../src/QyUtils.js").folderOrFileExists, socPokecRelationshipsFilePath = (logger.level = "info", 
-"D:/SampleData/soc_pokec/soc-pokec-relationships.txt"), socPokecProfileFilePath = "D:/SampleData/soc_pokec/soc-pokec-profiles.txt", dataFolder = "./tmp/soc_pokec", qyDB = new QyDB(dataFolder);
+import {
+    open as c,
+    rm as t
+} from "node:fs/promises";
 
-async function insertProfiles() {}
+import "node:assert/strict";
 
-async function insertData() {
-    console.time("readData");
-    var e, a = {};
-    for await (e of (await open(socPokecRelationshipsFilePath, "r")).readLines()) {
-        var [ t, r ] = e.split("\t"), s = a[t];
-        s ? s[r] = 1 : a[t] = {
-            [r]: 1
-        };
-    }
-    console.timeEnd("readData"), console.time("insertData");
-    var o, i = qyDB.batch;
-    let n = 0;
-    for (o in a) {
-        var l = a[o];
-        i.insertP([ "relationships", o ], l), 3e4 < ++n && (await i.run(!0), n = 0);
-    }
-    await i.run(!0), console.timeEnd("insertData");
-}
+import {
+    QyDB as e
+} from "../src/QyDB.js";
 
-async function run() {
+import {
+    folderOrFileExists as p
+} from "../src/QyUtils.js";
+
+logger.level = "info";
+
+let m = "D:/SampleData/soc_pokec/soc-pokec-relationships.txt";
+
+let f = "./tmp/soc_pokec", w = new e(f);
+
+(async () => {
     process.argv[3] && (logger.level = process.argv[3]);
     let e;
     if ("true" == process.argv[2]) {
         try {
-            await rm(dataFolder, {
+            await t(f, {
                 recursive: !0
             });
         } catch (e) {}
         e = !0;
-    } else await folderOrFileExists(dataFolder) || (e = !0);
-    console.time("run"), await qyDB.start(), e && await insertData(), await qyDB.stop(), 
-    console.timeEnd("run");
-}
-
-run();
+    } else await p(f) || (e = !0);
+    if (console.time("run"), await w.start(), e) {
+        {
+            console.time("readData");
+            var a, r = await c(m, "r"), s = {};
+            for await (o of r.readLines()) {
+                var [ o, i ] = o.split("\t"), n = s[o];
+                n ? n[i] = 1 : s[o] = {
+                    [i]: 1
+                };
+            }
+            console.timeEnd("readData"), console.time("insertData");
+            let e = w.batch, t = 0;
+            for (a in s) {
+                var l = s[a];
+                e.insertP([ "relationships", a ], l), 3e4 < ++t && (await e.run(!0), 
+                t = 0);
+            }
+            await e.run(!0), console.timeEnd("insertData");
+        }
+        await 0;
+    }
+    await w.stop(), console.timeEnd("run");
+})();

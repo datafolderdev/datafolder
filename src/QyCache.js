@@ -1,77 +1,151 @@
-let path = require("node:path"), EventEmitter = require("node:events"), QyDir = require("./QyDir.js").QyDir, QyFileLogger = require("./QyFileLogger.js").QyFileLogger, QyKVData = require("./QyKVData.js").QyKVData, {
-    QyTriggerNode,
-    updateTriggerNodes
-} = require("./QyTrigger.js"), {
-    isString,
-    lockExclusiveFilePath,
-    unlockExclusiveFilePath
-} = require("./QyUtils.js"), dumpStructure = require("./QyStructure.js").dumpStructure, {
-    getIndexPropPaths,
-    parseNamePathAndQuery
-} = require("./QyIndex.js"), getDefaultOptions = require("./QyDefaultOptions.js").getDefaultOptions, {
-    ensureDir,
-    SpecialFilePaths
-} = require("./QyUtils.js"), QueryCounter = require("./QyUnionNode.js").QueryCounter, QyKVDataLoader = require("./QyKVDataLoader.js").QyKVDataLoader, requireFromModCode = require("./QyMod.js").requireFromModCode, {
-    IndexDirPath,
-    TriggerDirPath,
-    RpcDirPath
-} = SpecialFilePaths;
+import {
+    join as v
+} from "node:path";
 
-class QyCache extends EventEmitter {
-    constructor(e, r, t) {
-        super(), r = {
-            ...getDefaultOptions("QyCache"),
-            ...r
+import r from "node:events";
+
+import {
+    QyDir as o
+} from "./QyDir.js";
+
+import {
+    QyFileLogger as a
+} from "./QyFileLogger.js";
+
+import {
+    QyKVData as s
+} from "./QyKVData.js";
+
+import {
+    QyTriggerNode as f,
+    updateTriggerNodes as g
+} from "./QyTrigger.js";
+
+import {
+    isString as n,
+    lockExclusiveFilePath as C,
+    unlockExclusiveFilePath as i
+} from "./QyUtils.js";
+
+import {
+    dumpStructure as q
+} from "./QyStructure.js";
+
+import {
+    getIndexPropPaths as l,
+    parseNamePathAndQuery as d
+} from "./QyIndex.js";
+
+import {
+    getDefaultOptions as u
+} from "./QyDefaultOptions.js";
+
+import {
+    ensureDir as R,
+    SpecialFilePaths as e
+} from "./QyUtils.js";
+
+import {
+    QueryCounter as p
+} from "./QyUnionNode.js";
+
+import {
+    QyKVDataLoader as Q
+} from "./QyKVDataLoader.js";
+
+import {
+    requireFromModCode as h
+} from "./QyMod.js";
+
+let {
+    IndexDirPath: S,
+    TriggerDirPath: x,
+    RpcDirPath: O
+} = e;
+
+class t extends r {
+    constructor(r, e, t) {
+        super(), e = {
+            ...u("QyCache"),
+            ...e
         };
-        var i = path.join(e, "qykv");
+        var i = v(r, "qykv");
         Object.assign(this, {
             qyDB: t,
-            rootFolder: e,
+            rootFolder: r,
             kvFolder: i,
-            rpcFolder: path.join(e, "rpc"),
-            options: r,
-            rootDir: new QyDir("", !0, void 0, this),
-            exclusiveFilePath: path.join(e, ".opened"),
-            qyKVData: new QyKVData(i, r, this),
-            qyFileLogger: new QyFileLogger(path.join(e, "qylog"), r),
+            rpcFolder: v(r, "rpc"),
+            options: e,
+            rootDir: new o("", !0, void 0, this),
+            exclusiveFilePath: v(r, ".opened"),
+            qyKVData: new s(i, e, this),
+            qyFileLogger: new a(v(r, "qylog"), e),
             rpcFunMap: {}
         });
     }
     async start() {
         var {
-            rootFolder: e,
-            kvFolder: r,
+            rootFolder: r,
+            kvFolder: e,
             options: t,
             qyKVData: i,
-            qyFileLogger: a,
-            exclusiveFilePath: o,
+            qyFileLogger: o,
+            exclusiveFilePath: a,
             rootDir: s
         } = this;
-        logger.log(`Starting at ${e}...`);
+        logger.log(`Starting at ${r}...`);
         try {
-            await ensureDir(r), a.start();
+            await R(e), o.start();
             var [ {
                 maxChangeId: g,
                 loadedMaxAclNum: n,
                 qySnapshots: l,
-                aclKeyValueMap: u
-            } ] = await Promise.all([ this._loadQyKVData(r, t), lockExclusiveFilePath(o) ]);
-            await i.start(g, n, l, u);
-        } catch (e) {
-            throw a.stop(), e;
+                aclKeyValueMap: d
+            } ] = await Promise.all([ ((r, e) => (r = new Q(r, e)).load())(e, t), C(a) ]);
+            await i.start(g, n, l, d);
+        } catch (r) {
+            throw o.stop(), r;
         }
-        return t.preloadFoldersAtStart && this._preloadFolders(s), this.indexRootDir = s.searchOrCreateSubdir(IndexDirPath), 
-        this._initTriggers(), this._initRpcs(), t.dumpStructureAtStart && await dumpStructure(path.join(e, "qystruct"), s), 
-        logger.log("Started."), this;
+        t.preloadFoldersAtStart && !function r(e) {
+            let {
+                subdirList: t,
+                fileMap: i
+            } = e;
+            for (var o of t) r(o);
+        }(s), this.indexRootDir = s.searchOrCreateSubdir(S);
+        var u = this, e = u.rootDir;
+        e.triggerNodes = [ new f() ], u.triggerRootDir = e.searchOrCreateSubdir(x);
+        for (p of u.triggerRootDir.fileList) {
+            var {
+                name: p,
+                fileContent: h
+            } = p, {
+                fileNamePath: h,
+                propNamePathList: c,
+                modCode: D
+            } = h;
+            u.insertTriggerToTree(p, h, c, D);
+        }
+        var y = this;
+        y.rpcRootDir = y.rootDir.searchOrCreateSubdir(O);
+        for (m of y.rpcRootDir.fileList) {
+            var {
+                name: m,
+                fileContent: F
+            } = m;
+            F && (F = F.modCode, F) && y.insertRpc(m, F);
+        }
+        return t.dumpStructureAtStart && await q(v(r, "qystruct"), s), logger.log("Started."), 
+        this;
     }
     async stop() {
         logger.log("Stopping...");
         var {
-            qyKVData: e,
-            qyFileLogger: r,
+            qyKVData: r,
+            qyFileLogger: e,
             exclusiveFilePath: t
         } = this;
-        return await e.stop(), await r.stop(), unlockExclusiveFilePath(t), Object.assign(this, {
+        return await r.stop(), await e.stop(), i(t), Object.assign(this, {
             rootDir: void 0,
             indexRootDir: void 0,
             qyKVData: void 0,
@@ -88,125 +162,88 @@ class QyCache extends EventEmitter {
     decreaseChangeId() {
         this.qyKVData.decreaseChangeId();
     }
-    save(e, r, t, i, a) {
+    save(r, e, t, i, o) {
         var {
-            qyKVData: o,
+            qyKVData: a,
             qyFileLogger: s
         } = this;
-        return t && s.save(e, t), o.save(e, r, i, a);
+        return t && s.save(r, t), a.save(r, e, i, o);
     }
-    getFile(e, r = this.rootDir) {
-        return e.isFile ? e : isString(e) ? r.getFile(e) : r.searchFile(e);
+    getFile(r, e = this.rootDir) {
+        return r.isFile ? r : n(r) ? e.getFile(r) : e.searchFile(r);
     }
-    getDir(e, r = this.rootDir) {
-        return e.isDir ? e : isString(e) ? r.getSubdir(e) : r.searchSubdir(e);
+    getDir(r, e = this.rootDir) {
+        return r.isDir ? r : n(r) ? e.getSubdir(r) : e.searchSubdir(r);
     }
-    getOrCreateFile(e, r = this.rootDir) {
-        return e.isFile ? e : isString(e) ? r.getOrCreateFile(e) : r.searchOrCreateFile(e);
+    getOrCreateFile(r, e = this.rootDir) {
+        return r.isFile ? r : n(r) ? e.getOrCreateFile(r) : e.searchOrCreateFile(r);
     }
-    getOrCreateDir(e, r = this.rootDir) {
-        return e.isDir ? e : isString(e) ? r.getOrCreateSubdir(e) : r.searchOrCreateSubdir(e);
+    getOrCreateDir(r, e = this.rootDir) {
+        return r.isDir ? r : n(r) ? e.getOrCreateSubdir(r) : e.searchOrCreateSubdir(r);
     }
-    getIndexDir(e) {
-        return this.indexRootDir.getSubdir(e.fullPathHash);
+    getIndexDir(r) {
+        return this.indexRootDir.getSubdir(r.fullPathHash);
     }
-    getOrCreateIndexDir(e) {
-        return this.indexRootDir.getOrCreateSubdir(e.fullPathHash);
+    getOrCreateIndexDir(r) {
+        return this.indexRootDir.getOrCreateSubdir(r.fullPathHash);
     }
-    getTriggerFile(e) {
-        return this.triggerRootDir.getFile(e);
+    getTriggerFile(r) {
+        return this.triggerRootDir.getFile(r);
     }
-    getOrCreateTriggerFile(e) {
-        return this.triggerRootDir.getOrCreateFile(e);
+    getOrCreateTriggerFile(r) {
+        return this.triggerRootDir.getOrCreateFile(r);
     }
-    getRpcFile(e) {
-        return this.rpcRootDir.getFile(e);
+    getRpcFile(r) {
+        return this.rpcRootDir.getFile(r);
     }
-    getOrCreateRpcFile(e) {
-        return this.rpcRootDir.getOrCreateFile(e);
+    getOrCreateRpcFile(r) {
+        return this.rpcRootDir.getOrCreateFile(r);
     }
-    insertTriggerToTree(e, r, t, i) {
+    insertTriggerToTree(r, e, t, i) {
         var {
-            rootDir: a,
-            qyDB: o
-        } = this, i = requireFromModCode("trigger", e, i, o);
-        a.triggerNodes[0].insertTrigger(e, r, t, i), updateTriggerNodes(a, r);
+            rootDir: o,
+            qyDB: a
+        } = this, i = h("trigger", r, i, a);
+        o.triggerNodes[0].insertTrigger(r, e, t, i), g(o, e);
     }
-    removeTriggerFromTree(e, r) {
+    removeTriggerFromTree(r, e) {
         var t = this.rootDir;
-        t.triggerNodes[0].removeTrigger(e, r) && updateTriggerNodes(t, r);
+        t.triggerNodes[0].removeTrigger(r, e) && g(t, e);
     }
-    insertRpc(e, r) {
+    insertRpc(r, e) {
         var {
             rpcFunMap: t,
             qyDB: i
-        } = this, r = requireFromModCode("rpc", e, r, i);
-        r && (t[e] = r);
+        } = this, e = h("rpc", r, e, i);
+        e && (t[r] = e);
     }
-    removeRpc(e) {
-        delete this.rpcFunMap[e];
+    removeRpc(r) {
+        delete this.rpcFunMap[r];
     }
-    queryFiles(e, r, t, i, a = this.rootDir) {
-        var o = [], t = (isString(r) && null == t && (t = 1), new QueryCounter(t, i));
-        return this._queryFiles(e, r, o, t, a), o;
+    queryFiles(r, e, t, i, o = this.rootDir) {
+        var a = [], t = (n(e) && null == t && (t = 1), new p(t, i)), i = this.options.queryAutoCreateIndex;
+        return c(r, e, a, t, o, i), a;
     }
-    queryFilesMulti(e, r, t, i = this.rootDir) {
-        var a, o, s = [], g = new QueryCounter(r, t);
-        for ([ a, o ] of e) this._queryFiles(a, o, s, g, i);
+    queryFilesMulti(r, e, t, i = this.rootDir) {
+        var o, a, s = [], g = new p(e, t), n = this.options.queryAutoCreateIndex;
+        for ([ o, a ] of r) c(o, a, s, g, i, n);
         return s;
     }
-    _queryFiles(e, r, t, i, a) {
-        var o;
-        r && (o = this.options.queryAutoCreateIndex, o = o ? getIndexPropPaths(r) : void 0, 
-        parseNamePathAndQuery(e, a, o, r, t, i));
-    }
-    async callRpc(r, e, t) {
-        var i, a = this.rpcFunMap[r];
-        if (!a) return i = `RPC ${r} not implemented.`, logger.warn(i), new Error(i);
+    async callRpc(e, r, t) {
+        var i, o = this.rpcFunMap[e];
+        if (!o) return i = `RPC ${e} not implemented.`, logger.warn(i), new Error(i);
         try {
-            return await a(e, t);
-        } catch (e) {
-            return logger.error(`Calling RPC ${r} failed:`, e), e;
+            return await o(r, t);
+        } catch (r) {
+            return logger.error(`Calling RPC ${e} failed:`, r), r;
         }
-    }
-    _preloadFolders(e) {
-        var r, t = e.subdirMap;
-        for (r in t) {
-            var i = t[r];
-            i.created && this._preloadFolders(i);
-        }
-        e._ensureFileMapLoaded();
-    }
-    _initTriggers() {
-        var e, r = this.rootDir;
-        r.triggerNodes = [ new QyTriggerNode() ], this.triggerRootDir = r.searchOrCreateSubdir(TriggerDirPath);
-        for (e of this.triggerRootDir.fileList) {
-            var {
-                name: t,
-                fileContent: i
-            } = e, {
-                fileNamePath: i,
-                propNamePathList: a,
-                modCode: o
-            } = i;
-            this.insertTriggerToTree(t, i, a, o);
-        }
-    }
-    _initRpcs() {
-        this.rpcRootDir = this.rootDir.searchOrCreateSubdir(RpcDirPath);
-        for (var e of this.rpcRootDir.fileList) {
-            var {
-                name: e,
-                fileContent: r
-            } = e;
-            r && (r = r.modCode, r) && this.insertRpc(e, r);
-        }
-    }
-    _loadQyKVData(e, r) {
-        return new QyKVDataLoader(e, r).load();
     }
 }
 
-Object.assign(module.exports, {
-    QyCache: QyCache
-});
+function c(r, e, t, i, o, a) {
+    e && (a = a ? l(e) : void 0, d(r, o, a, e, t, i));
+}
+
+export {
+    t as QyCache
+};

@@ -1,15 +1,23 @@
-let util = require("node:util"), {
-    getValByNamePath,
-    setValByNamePath
-} = require("./QyFileContentUtils.js"), {
-    isEmptyObj,
-    isMatchName,
-    getMatchParam,
-    arrayLast,
-    propNameJoin
-} = require("./QyUtils.js"), isArray = Array.isArray;
+import {
+    isDeepStrictEqual as p
+} from "node:util";
 
-class QyTriggerNode {
+import {
+    getValByNamePath as c,
+    setValByNamePath as u
+} from "./QyFileContentUtils.js";
+
+import {
+    isEmptyObj as e,
+    isMatchName as l,
+    getMatchParam as d,
+    arrayLast as f,
+    propNameJoin as N
+} from "./QyUtils.js";
+
+let v = Array.isArray;
+
+class h {
     constructor(e, r) {
         Object.assign(this, {
             name: e,
@@ -20,27 +28,27 @@ class QyTriggerNode {
     }
     insertTrigger(e, r, t, a) {
         let i = this;
-        for (var g of r) {
-            isMatchName(g) && (g = "*");
-            var s = i.children;
-            i = s[g] || (s[g] = new QyTriggerNode(g, i));
+        for (var s of r) {
+            l(s) && (s = "*");
+            var o = i.children;
+            i = o[s] || (o[s] = new h(s, i));
         }
-        var l = i.triggerMap, o = l[e];
-        o ? Object.assign(o, {
+        var n = i.triggerMap, g = n[e];
+        g ? Object.assign(g, {
             triggerName: e,
             fileNamePath: r,
             propNamePathList: t,
             fun: a
-        }) : l[e] = new QyTrigger(e, r, t, a);
+        }) : n[e] = new m(e, r, t, a);
     }
     removeTrigger(e, r) {
         let t = this;
-        for (var a of r) if (isMatchName(a) && (a = "*"), !(t = t.children[a])) return !1;
+        for (var a of r) if (l(a) && (a = "*"), !(t = t.children[a])) return !1;
         r = t.triggerMap;
         return !!r[e] && (delete r[e], t.isEmpty && t.removeEmptyNodes(), !0);
     }
     get isEmpty() {
-        return isEmptyObj(this.children) && isEmptyObj(this.triggerMap);
+        return e(this.children) && e(this.triggerMap);
     }
     removeEmptyNodes() {
         let e = this;
@@ -60,7 +68,7 @@ class QyTriggerNode {
     }
 }
 
-class QyTrigger {
+class m {
     constructor(e, r, t, a) {
         Object.assign(this, {
             triggerName: e,
@@ -73,61 +81,60 @@ class QyTrigger {
         var t, {
             triggerName: a,
             fileNamePath: i,
-            propNamePathList: g,
-            fun: s
-        } = this, l = e.fileContent;
-        let o;
-        for (t of g) {
-            var n = getValByNamePath(r.oldValue, t), h = getValByNamePath(r.newValue, t);
-            util.isDeepStrictEqual(n, h) || (n = {
-                oldValue: n,
-                newValue: h
-            }, (isArray(h) || isArray(getValByNamePath(l, t))) && (n.isArrayDelta = !0), 
-            (o = o || {
+            propNamePathList: s,
+            fun: o
+        } = this, n = e.fileContent;
+        let g;
+        for (t of s) {
+            var l = c(r.oldValue, t), f = c(r.newValue, t);
+            p(l, f) || (l = {
+                oldValue: l,
+                newValue: f
+            }, (v(f) || v(c(n, t))) && (l.isArrayDelta = !0), (g = g || {
                 _file: e,
-                _fileContent: l
-            })[propNameJoin(t)] = n, setValByNamePath(o, t, n));
+                _fileContent: n
+            })[N(t)] = l, u(g, t, l));
         }
-        if (o) {
+        if (g) {
             var {
-                namePath: m,
-                qyCache: g
+                namePath: h,
+                qyCache: s
             } = e;
-            for (let e = 0; e < m.length; ++e) {
-                var y = getMatchParam(i[e]);
-                y && (o[y] = m[e]);
+            for (let e = 0; e < h.length; ++e) {
+                var m = d(i[e]);
+                m && (g[m] = h[e]);
             }
             try {
-                s && s(o), g.emit(a, o);
+                o && o(g), s.emit(a, g);
             } catch (e) {
-                logger.error(`Running trigger ${a} failed:`, o, e);
+                logger.error(`Running trigger ${a} failed:`, g, e);
             }
         }
     }
 }
 
-let emptyArray = [];
+let t = [];
 
-function _getMatchedSubItems(e, r) {
-    return e ? isMatchName(r) ? Object.values(e) : (e = e[r]) ? [ e ] : emptyArray : emptyArray;
+function y(e, r) {
+    return e ? l(r) ? Object.values(e) : (e = e[r]) ? [ e ] : t : t;
 }
 
-function updateTriggerNodes(e, a) {
+function r(e, a) {
     if (0 != a.length) {
         let r = [ e ], t = [];
         for (let e = 0; e < a.length - 1; ++e) {
-            var i, g = a[e];
-            for (i of r) for (var s of _getMatchedSubItems(i.subdirMap, g)) i.setChildTriggerNodes(s), 
-            t.push(s);
+            var i, s = a[e];
+            for (i of r) for (var o of y(i.subdirMap, s)) i.setChildTriggerNodes(o), 
+            t.push(o);
             if (0 == t.length) return;
             [ r, t ] = [ t, r ], t.length = 0;
         }
-        var l, o = arrayLast(a);
-        for (l of r) for (var n of _getMatchedSubItems(l.fileMap, o)) l.setChildTriggerNodes(n);
+        var n, g = f(a);
+        for (n of r) for (var l of y(n.fileMap, g)) n.setChildTriggerNodes(l);
     }
 }
 
-Object.assign(module.exports, {
-    QyTriggerNode: QyTriggerNode,
-    updateTriggerNodes: updateTriggerNodes
-});
+export {
+    h as QyTriggerNode,
+    r as updateTriggerNodes
+};

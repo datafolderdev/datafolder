@@ -1,14 +1,20 @@
-let QyMessager = require("./QyMessager.js").QyMessager, getDefaultOptions = require("./QyDefaultOptions.js").getDefaultOptions;
+import {
+    QyMessager as e
+} from "./QyMessager.js";
 
-class QyLogFileSaver extends QyMessager {
+import {
+    getDefaultOptions as r
+} from "./QyDefaultOptions.js";
+
+class s extends e {
     constructor(e, s) {
         super(e, "QyLogFileSaver_Worker.js", s = {
-            ...getDefaultOptions("QyLogFileSaver"),
+            ...r("QyLogFileSaver"),
             ...s
         }, s, [ "switch" ], [ "save" ]);
     }
 }
 
-Object.assign(module.exports, {
-    QyLogFileSaver: QyLogFileSaver
-});
+export {
+    s as QyLogFileSaver
+};

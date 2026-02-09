@@ -1,97 +1,99 @@
-let {
-    calHash,
-    SpecialFilePaths
-} = require("./QyUtils.js"), HiddenFolderName = SpecialFilePaths.HiddenFolderName, Flag_Created = 1, Flag_UnderHiddenFolder = 2, Flag_SubdirMapLoaded = 4, Flag_FileMapLoaded = 8, Flag_FileContentLoaded = 16, Flag_Visited = 32;
+import {
+    calHash as a,
+    SpecialFilePaths as t
+} from "./QyUtils.js";
 
-class QyItem {
-    constructor(e, t, a) {
-        e = e.toString(), Object.assign(this, {
-            name: e,
+let s = t.HiddenFolderName;
+
+class e {
+    constructor(t, e, a) {
+        t = t.toString(), Object.assign(this, {
+            name: t,
             parentDir: a,
             flagInt: 0
-        }), this._created = t, a && (a.name == HiddenFolderName || a.underHiddenFolder) && (this.flagInt |= Flag_UnderHiddenFolder);
+        }), this._created = e, a && (a.name == s || a.underHiddenFolder) && (this.flagInt |= 2);
     }
-    _getFlag(e) {
-        return 0 != (this.flagInt & e);
+    _getFlag(t) {
+        return 0 != (this.flagInt & t);
     }
-    _setFlag(e, t) {
-        t ? this.flagInt |= e : this.flagInt &= ~e;
+    _setFlag(t, e) {
+        e ? this.flagInt |= t : this.flagInt &= ~t;
     }
     get qyCache() {
-        var e = this.parentDir;
-        return e ? e.qyCache : this._qyCache;
+        var t = this.parentDir;
+        return t ? t.qyCache : this._qyCache;
     }
     get _created() {
-        return this._getFlag(Flag_Created);
+        return this._getFlag(1);
     }
-    set _created(e) {
-        this._setFlag(Flag_Created, e);
+    set _created(t) {
+        this._setFlag(1, t);
     }
     get subdirMapLoaded() {
-        return this._getFlag(Flag_SubdirMapLoaded);
+        return this._getFlag(4);
     }
-    set subdirMapLoaded(e) {
-        return this._setFlag(Flag_SubdirMapLoaded, e);
+    set subdirMapLoaded(t) {
+        return this._setFlag(4, t);
     }
     get fileMapLoaded() {
-        return this._getFlag(Flag_FileMapLoaded);
+        return this._getFlag(8);
     }
-    set fileMapLoaded(e) {
-        this._setFlag(Flag_FileMapLoaded, e);
+    set fileMapLoaded(t) {
+        this._setFlag(8, t);
     }
     get fileContentLoaded() {
-        return this._getFlag(Flag_FileContentLoaded);
+        return this._getFlag(16);
     }
-    set fileContentLoaded(e) {
-        this._setFlag(Flag_FileContentLoaded, e);
+    set fileContentLoaded(t) {
+        this._setFlag(16, t);
     }
     get visited() {
-        return this._getFlag(Flag_Visited);
+        return this._getFlag(32);
     }
-    set visited(e) {
-        this._setFlag(Flag_Visited, e);
+    set visited(t) {
+        this._setFlag(32, t);
     }
     get nameNum() {
-        var e;
-        return this._nameNum || (e = +this.name, this._nameNum = isNaN(e) ? this.name : e);
+        var t;
+        return this._nameNum || (t = +this.name, this._nameNum = isNaN(t) ? this.name : t);
     }
     cmp({
-        nameNum: e
+        nameNum: t
     }) {
-        var t = this.nameNum;
-        return t < e ? -1 : e < t ? 1 : 0;
+        var e = this.nameNum;
+        return e < t ? -1 : t < e ? 1 : 0;
     }
     get fullPath() {
-        var e, t;
+        var t, e;
         return null == this._fullPath && ({
-            parentDir: e,
-            name: t
-        } = this, this._fullPath = e ? e.fullPath + "/" + t : t), this._fullPath;
+            parentDir: t,
+            name: e
+        } = this, this._fullPath = t ? t.fullPath + "/" + e : e), this._fullPath;
     }
     get fullPathHash() {
-        var e, t;
+        var t, e;
         return null == this._fullPathHash && ({
-            parentDir: e,
-            name: t
-        } = this, this._fullPathHash = calHash(e ? e.fullPathHash + t : t)), this._fullPathHash;
+            parentDir: t,
+            name: e
+        } = this, this._fullPathHash = a(t ? t.fullPathHash + e : e)), this._fullPathHash;
     }
     get isItem() {
         return !0;
     }
     get underHiddenFolder() {
-        return this.flagInt & Flag_UnderHiddenFolder;
+        return 2 & this.flagInt;
     }
     get parentList() {
         if (null == this._parentList) {
-            var t = this._parentList = [];
-            let e = this.parentDir;
-            for (;e.parentDir; ) t.push(e), e = e.parentDir;
-            t.reverse();
+            var e = this._parentList = [];
+            let t = this.parentDir;
+            for (;t.parentDir; ) e.push(t), t = t.parentDir;
+            e.reverse();
         }
         return this._parentList;
     }
     get parentNamePath() {
-        return null == this._parentNameList && (this._parentNameList = this.parentList.map(e => e.name)), 
+        return null == this._parentNameList && (this._parentNameList = this.parentList.map(t => t.name)), 
         this._parentNameList;
     }
     get namePath() {
@@ -100,6 +102,6 @@ class QyItem {
     }
 }
 
-Object.assign(module.exports, {
-    QyItem: QyItem
-});
+export {
+    e as QyItem
+};

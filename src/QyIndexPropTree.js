@@ -1,6 +1,6 @@
-let isArray = Array.isArray;
+let t = Array.isArray;
 
-class QyIndexPropNode {
+class i {
     constructor(e, t) {
         Object.assign(this, {
             name: e,
@@ -14,7 +14,7 @@ class QyIndexPropNode {
         !0);
         var n = e[t];
         let h;
-        return r ? (h = r[n]) || (h = r[n] = new QyIndexPropNode(n, this), ++this.childCount) : (h = new QyIndexPropNode(n, this), 
+        return r ? (h = r[n]) || (h = r[n] = new i(n, this), ++this.childCount) : (h = new i(n, this), 
         this.children = {
             [n]: h
         }, ++this.childCount), h.insert(e, t + 1);
@@ -26,7 +26,14 @@ class QyIndexPropNode {
             children: i
         } = this;
         if (t == e.length) return this.indexPropPath && (r.removed = !0, delete this.indexPropPath), 
-        n && this._isEmpty() && n._removeChild(h), r;
+        n && o(this) && function e(t, r) {
+            let {
+                children: n,
+                parent: h,
+                name: i
+            } = t;
+            n[r] && (delete n[r], 0 == --t.childCount && delete t.children, h) && o(t) && e(h, i);
+        }(n, h), r;
         this.indexPropPath && (r.hasPrefix = !0);
         n = i && i[e[t]];
         return n ? n.remove(e, t + 1, r) : r;
@@ -38,32 +45,25 @@ class QyIndexPropNode {
         } = this;
         if (r) e.push(r); else for (var n in t) t[n].getAllIndexPropPaths(e);
     }
-    _removeChild(e) {
-        var {
-            children: t,
-            parent: r,
-            name: n
-        } = this;
-        t[e] && (delete t[e], 0 == --this.childCount && delete this.children, r) && this._isEmpty() && r._removeChild(n);
-    }
-    _isEmpty() {
-        return !this.indexPropPath && 0 == this.childCount;
-    }
 }
 
-class QyIndexPropTree {
+function o(e) {
+    return !e.indexPropPath && 0 == e.childCount;
+}
+
+class n {
     constructor() {
         Object.assign(this, {
-            rootNode: new QyIndexPropNode(),
+            rootNode: new i(),
             changeCount: 0,
             allIndexPropPaths: []
         });
     }
     insert(e) {
-        0 < (e = isArray(e) ? e : [ e ]).length && this.rootNode.insert(e, 0) && ++this.changeCount;
+        0 < (e = t(e) ? e : [ e ]).length && this.rootNode.insert(e, 0) && ++this.changeCount;
     }
     remove(e) {
-        isArray(e) || (e = [ e ]);
+        t(e) || (e = [ e ]);
         e = this.rootNode.remove(e);
         return e.removed && ++this.changeCount, e;
     }
@@ -79,14 +79,14 @@ class QyIndexPropTree {
     }
 }
 
-function getPrefixPropPaths(e) {
+function e(e) {
     if (0 == e.length) return [];
-    var t, r = new QyIndexPropTree();
+    var t, r = new n();
     for (t of e) r.insert(t);
     return r.getAllIndexPropPaths();
 }
 
-Object.assign(module.exports, {
-    QyIndexPropTree: QyIndexPropTree,
-    getPrefixPropPaths: getPrefixPropPaths
-});
+export {
+    n as QyIndexPropTree,
+    e as getPrefixPropPaths
+};

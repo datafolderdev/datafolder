@@ -1,50 +1,58 @@
-let {
-    readdir,
-    rm,
-    writeFile,
-    rename
-} = require("node:fs/promises"), path = require("node:path"), ensureDir = require("./QyUtils.js").ensureDir;
+import {
+    readdir as w,
+    rm as v,
+    writeFile as g,
+    rename as F
+} from "node:fs/promises";
 
-async function dumpStructure(e, r) {
+import {
+    join as x
+} from "node:path";
+
+import {
+    ensureDir as y
+} from "./QyUtils.js";
+
+async function P(e, r) {
     let t = {};
     for (var i of r.subdirList) {
         let e = i.name;
         for (;r.getFile(e); ) e += "_d";
-        e = cleanName(e), t[e] = {
+        e = _(e), t[e] = {
             x: i,
             count: 0
         };
     }
-    await ensureDir(e);
-    var a, n = [], u = [];
-    let o = {};
-    for (a of await readdir(e, {
+    await y(e);
+    var o, a = [], s = [];
+    let n = {};
+    for (o of await w(e, {
         withFileTypes: !0
     })) {
-        var s = a.name;
-        a.isFile() ? n.push(s) : (u.push(s), o[s] = 1);
+        var u = o.name;
+        o.isFile() ? a.push(u) : (s.push(u), n[u] = 1);
     }
-    var l, p, m, c, h, f = [];
-    for (l of u) t[l] || ((p = d((p = l) + "_d") || d(p.replace(/_d$/, ""))) ? (f.push(rename(path.join(e, l), path.join(e, p))), 
-    t[p].count = 1) : f.push(rm(path.join(e, l), {
+    var f, l, p, m, c, h = [];
+    for (f of s) t[f] || ((l = d((l = f) + "_d") || d(l.replace(/_d$/, ""))) ? (h.push(F(x(e, f), x(e, l))), 
+    t[l].count = 1) : h.push(v(x(e, f), {
         recursive: !0
     })));
-    for (m of n) r.getFile(m) || f.push(rm(path.join(e, m)));
-    await Promise.all(f), f.length = 0;
-    for (c of r.fileList) f.push(writeFile(path.join(e, cleanName(c.name)), c.contentAsText, {
+    for (p of a) r.getFile(p) || h.push(v(x(e, p)));
+    await Promise.all(h), h.length = 0;
+    for (m of r.fileList) h.push(g(x(e, _(m.name)), m.contentAsText, {
         flush: !0
     }));
-    for (h in await Promise.all(f), f.length = 0, t) f.push(dumpStructure(path.join(e, h), t[h].x));
+    for (c in await Promise.all(h), h.length = 0, t) h.push(P(x(e, c), t[c].x));
     function d(e) {
-        return e && 0 == t[e]?.count && !o[e] ? e : void 0;
+        return e && 0 == t[e]?.count && !n[e] ? e : void 0;
     }
-    await Promise.all(f);
+    await Promise.all(h);
 }
 
-function cleanName(e) {
+function _(e) {
     return e.replace(/"/g, "");
 }
 
-Object.assign(module.exports, {
-    dumpStructure: dumpStructure
-});
+export {
+    P as dumpStructure
+};

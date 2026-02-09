@@ -1,8 +1,8 @@
-class QueryCounter {
-    constructor(e = 1 / 0, i = 0) {
+class i {
+    constructor(i = 1 / 0, e = 0) {
         Object.assign(this, {
-            limit: e,
-            cursor: i,
+            limit: i,
+            cursor: e,
             added: 0,
             count: 0,
             encounteredMap: {}
@@ -11,95 +11,93 @@ class QueryCounter {
     get isFull() {
         return this.limit <= this.added;
     }
-    encounterOne(e) {
+    encounterOne(i) {
         var {
-            encounteredMap: i,
-            isFull: r
+            encounteredMap: e,
+            isFull: t
         } = this;
-        if (!r && !i[e]) return i[e] = 1, this.countOne();
+        if (!(t || i in e)) return e[i] = 1, this.countOne();
     }
     countOne() {
         if (this.count++ >= this.cursor) return ++this.added, !0;
     }
 }
 
-class QyQueryNode {
+class e {
     constructor() {
         Object.assign(this, {
             fileCount: 0,
             nodeList: []
         });
     }
-    encounterOne(e, i, r) {
-        if (r) {
-            if (r.encounterOne(i)) return e[i] = 1, r.isFull;
-        } else e[i] = 1;
+    encounterOne(i, e, t) {
+        if (!t || t.encounterOne(e)) return i[e] = 1, !0;
     }
 }
 
-class QyUnionNode extends QyQueryNode {
-    constructor(e) {
+class o extends e {
+    constructor(i) {
         super(), Object.assign(this, {
             dirMap: {},
             checkedDirMap: {}
-        }), e && this.addDir(e);
+        }), i && this.addDir(i);
     }
-    containsFile(i) {
+    containsFile(e) {
         var {
-            fileCount: e,
-            dirMap: r,
-            nodeList: t
+            fileCount: i,
+            dirMap: t,
+            nodeList: r
         } = this;
-        if (0 < e) {
-            for (var n in r) if (null != r[n].getFile(i)) return !0;
-            for (let e = 0; e < t.length; ++e) if (t[e].containsFile(i)) return !0;
+        if (0 < i) {
+            for (var n in t) if (null != t[n].getFile(e)) return !0;
+            for (let i = 0; i < r.length; ++i) if (r[i].containsFile(e)) return !0;
         }
         return !1;
     }
-    getFileMap(e) {
-        var i, r, t, {
+    *getFiles(i, e = {}) {
+        var t, r, {
             dirMap: n,
-            nodeList: o
-        } = this, s = {};
-        for (i in n) {
-            var u, d = n[i].fileMap;
-            for (u in d) if (d[u].created && !s[u] && this.encounterOne(s, u, e)) return s;
+            nodeList: s
+        } = this;
+        for (t in n) {
+            var o = n[t];
+            if (0 != o.fileCount) for (var a of o.fileNameList) if (!(a in e) && this.encounterOne(e, a, i) && (yield a, 
+            i?.isFull)) return;
         }
-        for (r of o) for (t in r.getFileMap()) if (!s[t] && this.encounterOne(s, t, e)) return s;
-        return s;
+        for (r of s) if (yield* r.getFiles(i, e), i?.isFull) return;
     }
-    addNode(e) {
-        if (e) {
+    addNode(i) {
+        if (i) {
             var {
-                dirMap: i,
-                checkedDirMap: r,
-                nodeList: t
+                dirMap: e,
+                checkedDirMap: t,
+                nodeList: r
             } = this;
-            if (e instanceof QyUnionNode) {
-                for (var n in e.dirMap) i[n] = e.dirMap[n];
-                for (var o in t.push(...e.nodeList), e.checkedDirMap) r[o] = 1;
-            } else t.push(e);
-            this.fileCount += e.fileCount;
+            if (i instanceof o) {
+                for (var n in i.dirMap) e[n] = i.dirMap[n];
+                for (var s in r.push(...i.nodeList), i.checkedDirMap) t[s] = 1;
+            } else r.push(i);
+            this.fileCount += i.fileCount;
         }
     }
-    addDir(e) {
+    addDir(i) {
         var {
-            dirMap: i,
-            checkedDirMap: r
+            dirMap: e,
+            checkedDirMap: t
         } = this, {
-            fileCount: t,
+            fileCount: r,
             subdirCount: n,
-            fullPathHash: o
-        } = e;
-        if (!i[o] && !r[o]) {
-            if (0 < n) for (var s of e.subdirList) this.addDir(s);
-            0 < t ? (i[o] = e, this.fileCount += t) : r[o] = 1;
+            fullPathHash: s
+        } = i;
+        if (!(s in e || s in t)) {
+            if (0 < n) for (var o of i.subdirList) this.addDir(o);
+            0 < r ? (e[s] = i, this.fileCount += r) : t[s] = 1;
         }
     }
 }
 
-Object.assign(module.exports, {
-    QyUnionNode: QyUnionNode,
-    QyQueryNode: QyQueryNode,
-    QueryCounter: QueryCounter
-});
+export {
+    o as QyUnionNode,
+    e as QyQueryNode,
+    i as QueryCounter
+};

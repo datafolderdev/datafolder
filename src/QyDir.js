@@ -1,11 +1,21 @@
-let QyItem = require("./QyItem.js").QyItem, {
-    getSubdirMapKey,
-    getFileMapKey,
-    SpecialFilePaths,
-    arrayLast
-} = require("./QyUtils.js"), QyFile = require("./QyFile.js").QyFile, HiddenFolderName = SpecialFilePaths.HiddenFolderName;
+import {
+    QyItem as e
+} from "./QyItem.js";
 
-class QyDir extends QyItem {
+import {
+    getSubdirMapKey as i,
+    getFileMapKey as t,
+    SpecialFilePaths as r,
+    arrayLast as s
+} from "./QyUtils.js";
+
+import {
+    QyFile as a
+} from "./QyFile.js";
+
+let d = r.HiddenFolderName;
+
+class u extends e {
     constructor(e, i, t, r) {
         super(e, i, t), r && (this._qyCache = r), Object.assign(this, {
             _subdirCount: 0,
@@ -26,10 +36,10 @@ class QyDir extends QyItem {
         ++i.subdirMapChangeCount);
     }
     get fileCount() {
-        return this._ensureFileMapLoaded(), this._fileCount;
+        return n(this), this._fileCount;
     }
     get subdirCount() {
-        return this._ensureSubdirMapLoaded(), this._subdirCount;
+        return l(this), this._subdirCount;
     }
     get isDir() {
         return !0;
@@ -38,19 +48,19 @@ class QyDir extends QyItem {
         return 0 == this.fileCount && 0 == this.subdirCount;
     }
     get isHiddenFolder() {
-        return this.name == HiddenFolderName;
+        return this.name == d;
     }
     get subdirMapKey() {
-        return this._subdirMapKey || (this._subdirMapKey = getSubdirMapKey(this.fullPathHash));
+        return this._subdirMapKey || (this._subdirMapKey = i(this.fullPathHash));
     }
     get fileMapKey() {
-        return this._fileMapKey || (this._fileMapKey = getFileMapKey(this.fullPathHash));
+        return this._fileMapKey || (this._fileMapKey = t(this.fullPathHash));
     }
     get subdirMap() {
-        return this._ensureSubdirMapLoaded(), this._subdirMap;
+        return l(this), this._subdirMap;
     }
     get fileMap() {
-        return this._ensureFileMapLoaded(), this._fileMap;
+        return n(this), this._fileMap;
     }
     getSubdir(e) {
         var i;
@@ -70,13 +80,13 @@ class QyDir extends QyItem {
         if ("/" === e) return this.qyCache.rootDir;
         let t = this.subdirMap;
         var r = (t = t || (this._subdirMap = {}))[e];
-        return r || (r = t[e] = new QyDir(e, i, this), this.setChildTriggerNodes(r)), 
+        return r || (r = t[e] = new u(e, i, this), this.setChildTriggerNodes(r)), 
         r;
     }
     getOrCreateFile(e, i) {
         let t = this.fileMap;
         var r = (t = t || (this._fileMap = {}))[e];
-        return r || (r = t[e] = new QyFile(e, i, this), this.setChildTriggerNodes(r)), 
+        return r || (r = t[e] = new a(e, i, this), this.setChildTriggerNodes(r)), 
         r;
     }
     searchSubdir(i, t = i.length) {
@@ -97,34 +107,34 @@ class QyDir extends QyItem {
     }
     searchFile(e) {
         var i = this.searchSubdir(e, e.length - 1);
-        if (i) return i.getFile(arrayLast(e));
+        if (i) return i.getFile(s(e));
     }
     searchOrCreateFile(e, i) {
-        return this.searchOrCreateSubdir(e, i, e.length - 1).getOrCreateFile(arrayLast(e));
+        return this.searchOrCreateSubdir(e, i, e.length - 1).getOrCreateFile(s(e));
     }
     get subdirList() {
-        return this._getCachedValue("_subdirList", this.subdirMapChangeCount, () => this.created && this.subdirMap ? Object.values(this.subdirMap).filter(e => e.created) : []);
+        return h(this, "_subdirList", this.subdirMapChangeCount, () => this.created && this.subdirMap ? Object.values(this.subdirMap).filter(e => e.created) : []);
     }
     get subdirNameList() {
-        return this._getCachedValue("_subdirNameList", this.subdirMapChangeCount, () => this.subdirList.map(e => e.name));
+        return h(this, "_subdirNameList", this.subdirMapChangeCount, () => this.subdirList.map(e => e.name));
     }
     get sortedSubdirList() {
-        return this._getCachedValue("_sortedSubdirList", this.subdirMapChangeCount, () => this.subdirList.sort((e, i) => e.cmp(i)));
+        return h(this, "_sortedSubdirList", this.subdirMapChangeCount, () => this.subdirList.sort((e, i) => e.cmp(i)));
     }
     get sortedSubdirNameList() {
-        return this._getCachedValue("_sortedSubdirNameList", this.subdirMapChangeCount, () => this.sortedSubdirList.map(e => e.nameNum));
+        return h(this, "_sortedSubdirNameList", this.subdirMapChangeCount, () => this.sortedSubdirList.map(e => e.nameNum));
     }
     get fileList() {
-        return this._getCachedValue("_fileList", this.fileMapChangeCount, () => this.created && this.fileMap ? Object.values(this.fileMap).filter(e => e.created) : []);
+        return h(this, "_fileList", this.fileMapChangeCount, () => this.created && this.fileMap ? Object.values(this.fileMap).filter(e => e.created) : []);
     }
     get fileNameList() {
-        return this._getCachedValue("_fileNameList", this.fileMapChangeCount, () => this.fileList.map(e => e.name));
+        return h(this, "_fileNameList", this.fileMapChangeCount, () => this.fileList.map(e => e.name));
     }
     get sortedFileList() {
-        return this._getCachedValue("_sortedFileList", this.fileMapChangeCount, () => this.fileList.sort((e, i) => e.cmp(i)));
+        return h(this, "_sortedFileList", this.fileMapChangeCount, () => this.fileList.sort((e, i) => e.cmp(i)));
     }
     get sortedFileNameList() {
-        return this._getCachedValue("_sortedFileNameList", this.fileMapChangeCount, () => this.sortedFileList.map(e => e.nameNum));
+        return h(this, "_sortedFileNameList", this.fileMapChangeCount, () => this.sortedFileList.map(e => e.nameNum));
     }
     *allSubdirs() {
         var e, i, t = this.subdirList;
@@ -155,38 +165,64 @@ class QyDir extends QyItem {
             e.triggerNodes = 0 < s.length ? s : void 0;
         } else e.triggerNodes = void 0;
     }
-    _getCachedValue(e, i, t) {
-        var r = this.cache, s = e + "ChangeCount";
-        return r[e] && r[s] == i || (r[e] = t(), r[s] = i), r[e];
+    *filterSubdirNames(e) {
+        for (var i of this.subdirList) e(i.name) && (yield i);
     }
-    _ensureSubdirMapLoaded() {
-        if (this.created && !this._subdirMap && !this.subdirMapLoaded) {
-            this.subdirMapLoaded = !0;
-            var e = this.qyCache;
-            if (e) {
-                e = e.qyKVData.getValueSync(this.subdirMapKey);
-                if (e) {
-                    var i, t = this._subdirMap = {};
-                    for (i in e) t[i] = new QyDir(i, !0, this);
-                }
-            }
+    *compareSubdirRangeL2H(e) {
+        var i, t = this.sortedSubdirList;
+        let r = !1;
+        for (i of t) {
+            var s = i.nameNum;
+            if (isNaN(s)) {
+                if (r) return;
+            } else if (e(s)) yield i, r = !0; else if (r) return;
         }
     }
-    _ensureFileMapLoaded() {
-        if (this.created && !this._fileMap && !this.fileMapLoaded) {
-            this.fileMapLoaded = !0;
-            var e = this.qyCache;
-            if (e) {
-                e = e.qyKVData.getValueSync(this.fileMapKey);
-                if (e) {
-                    var i, t = this._fileMap = {};
-                    for (i in e) t[i] = new QyFile(i, !0, this);
-                }
+    *compareSubdirRangeH2L(i) {
+        var t = this.sortedSubdirList;
+        let r = !1;
+        for (let e = t.length - 1; 0 <= e; --e) {
+            var s = t[e], a = s.nameNum;
+            if (isNaN(a)) {
+                if (r) return;
+            } else if (i(a)) yield s, r = !0; else if (r) return;
+        }
+    }
+}
+
+function h(e, i, t, r) {
+    var e = e.cache, s = i + "ChangeCount";
+    return e[i] && e[s] == t || (e[i] = r(), e[s] = t), e[i];
+}
+
+function l(e) {
+    if (e.created && !e._subdirMap && !e.subdirMapLoaded) {
+        e.subdirMapLoaded = !0;
+        var i = e.qyCache;
+        if (i) {
+            i = i.qyKVData.getValueSync(e.subdirMapKey);
+            if (i) {
+                var t, r = e._subdirMap = {};
+                for (t in i) r[t] = new u(t, !0, e);
             }
         }
     }
 }
 
-Object.assign(module.exports, {
-    QyDir: QyDir
-});
+function n(e) {
+    if (e.created && !e._fileMap && !e.fileMapLoaded) {
+        e.fileMapLoaded = !0;
+        var i = e.qyCache;
+        if (i) {
+            i = i.qyKVData.getValueSync(e.fileMapKey);
+            if (i) {
+                var t, r = e._fileMap = {};
+                for (t in i) r[t] = new a(t, !0, e);
+            }
+        }
+    }
+}
+
+export {
+    u as QyDir
+};

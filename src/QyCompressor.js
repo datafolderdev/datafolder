@@ -1,60 +1,86 @@
-let path = require("node:path"), pipeline = require("node:stream").pipeline, promisify = require("node:util").promisify, {
-    createGzip,
-    createUnzip
-} = require("node:zlib"), {
-    createReadStream,
-    createWriteStream
-} = require("node:fs"), fsPromises = require("node:fs/promises"), logger = require("./QyLogger.js").logger, {
-    isNotNullObj,
-    folderOrFileExists,
-    ensureParentDir
-} = require("./QyUtils.js"), runOnceWithWorker = require("./QyWorker.js").runOnceWithWorker, pipe = promisify(pipeline), Zip_File_Extension = ".gz", compressorWorkerJsFileName = "QyCompressor_Worker.js";
+import {
+    extname as i
+} from "node:path";
 
-function compressFile(e, i, r) {
-    return isNotNullObj(i) && (r = i, i = void 0), i = i || e + Zip_File_Extension, 
-    r = r || {}, e.endsWith(Zip_File_Extension) ? (logger.log(`${e} already ends with ${Zip_File_Extension}.`), 
-    !1) : i.endsWith(Zip_File_Extension) ? runOnceWithWorker(compressorWorkerJsFileName, {
+import {
+    pipeline as e
+} from "node:stream";
+
+import {
+    promisify as r
+} from "node:util";
+
+import {
+    createGzip as s,
+    createUnzip as a
+} from "node:zlib";
+
+import {
+    createReadStream as n,
+    createWriteStream as p
+} from "node:fs";
+
+import m from "node:fs/promises";
+
+import {
+    logger as d
+} from "./QyLogger.js";
+
+import {
+    isNotNullObj as t,
+    folderOrFileExists as l,
+    ensureParentDir as c
+} from "./QyUtils.js";
+
+import {
+    runOnceWithWorker as f
+} from "./QyWorker.js";
+
+let h = r(e), g = ".gz", w = "QyCompressor_Worker.js";
+
+function o(e, r, o) {
+    return t(r) && (o = r, r = void 0), r = r || e + g, o = o || {}, e.endsWith(g) ? (d.log(e + " already ends with .gz."), 
+    !1) : r.endsWith(g) ? f(w, {
         operation: "compress",
         srcFilePath: e,
-        destFilePath: i,
-        options: r
-    }).promise : (logger.log(`${i} doesn't end with ${Zip_File_Extension}.`), !1);
+        destFilePath: r,
+        options: o
+    }).promise : (d.log(r + " doesn't end with .gz."), !1);
 }
 
-function decompressFile(e, i, r) {
-    return e.endsWith(Zip_File_Extension) ? (isNotNullObj(i) && (r = i, i = void 0), 
-    i = i || e.replace(new RegExp(Zip_File_Extension + "$"), ""), r = r || {}, path.extname(i) == Zip_File_Extension ? (logger.log(`${i} already ends with ${Zip_File_Extension}.`), 
-    !1) : runOnceWithWorker(compressorWorkerJsFileName, {
+function u(e, r, o) {
+    return e.endsWith(g) ? (t(r) && (o = r, r = void 0), r = r || e.replace(new RegExp(g + "$"), ""), 
+    o = o || {}, i(r) == g ? (d.log(r + " already ends with .gz."), !1) : f(w, {
         operation: "decompress",
         srcFilePath: e,
-        destFilePath: i,
-        options: r
-    }).promise) : (logger.log(`${e} doesn't end with ${Zip_File_Extension}.`), !1);
+        destFilePath: r,
+        options: o
+    }).promise) : (d.log(e + " doesn't end with .gz."), !1);
 }
 
-async function runOperation({
+async function F({
     operation: e,
-    srcFilePath: i,
-    destFilePath: r,
-    options: o
+    srcFilePath: r,
+    destFilePath: o,
+    options: i
 }) {
     var {
-        removeSrcAfterSuccess: o,
-        override: s
-    } = o;
-    if (!await folderOrFileExists(i)) throw new Error(i + " doesn't exist.");
-    if (!s && await folderOrFileExists(r)) throw new Error(r + " already exists.");
-    if (await ensureParentDir(r), await pipe(createReadStream(i), ("compress" == e ? createGzip : createUnzip)(), createWriteStream(r)), 
-    logger.info(e + `ed ${i} to ${r}.`), o) try {
-        await fsPromises.unlink(i), logger.info("Unlinked " + i);
+        removeSrcAfterSuccess: i,
+        override: t
+    } = i;
+    if (!await l(r)) throw new Error(r + " doesn't exist.");
+    if (!t && await l(o)) throw new Error(o + " already exists.");
+    if (await c(o), await h(n(r), ("compress" == e ? s : a)(), p(o)), d.info(e + `ed ${r} to ${o}.`), 
+    i) try {
+        await m.unlink(r), d.info("Unlinked " + r);
     } catch (e) {
-        logger.error(`Failed to unlink ${i}:`, e);
+        d.error(`Failed to unlink ${r}:`, e);
     }
 }
 
-Object.assign(module.exports, {
-    Zip_File_Extension: Zip_File_Extension,
-    compressFile: compressFile,
-    decompressFile: decompressFile,
-    runOperation: runOperation
-});
+export {
+    g as Zip_File_Extension,
+    o as compressFile,
+    u as decompressFile,
+    F as runOperation
+};

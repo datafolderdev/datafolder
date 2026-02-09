@@ -1,58 +1,80 @@
-let path = require("node:path"), {
-    setFileConsoleDateDirPath,
-    closeFileConsole
-} = require("./QyLogger.js"), ensureDir = require("./QyUtils.js").ensureDir, getDefaultOptions = require("./QyDefaultOptions.js").getDefaultOptions, QyOpRunner = require("./QyOpRunner.js").QyOpRunner, QyLogFileSaver = require("./QyLogFileSaver.js").QyLogFileSaver;
+import {
+    join as a
+} from "node:path";
 
-class QyFileLogger extends QyOpRunner {
-    constructor(e, t) {
-        (t = {
-            ...getDefaultOptions("QyFileLogger"),
-            ...t
-        }).append = !t.clearLogAtStart, super(t, [ "stop" ], [ "startFileConsole", "switchFileConsole" ]), 
+import {
+    setFileConsoleDateDirPath as e,
+    closeFileConsole as t
+} from "./QyLogger.js";
+
+import {
+    ensureDir as i
+} from "./QyUtils.js";
+
+import {
+    getDefaultOptions as s
+} from "./QyDefaultOptions.js";
+
+import {
+    QyOpRunner as o
+} from "./QyOpRunner.js";
+
+import {
+    QyLogFileSaver as r
+} from "./QyLogFileSaver.js";
+
+class n extends o {
+    constructor(t, e) {
+        (e = {
+            ...s("QyFileLogger"),
+            ...e
+        }).append = !e.clearLogAtStart, super(e, [ "stop" ], [ "startFileConsole", "switchFileConsole" ]), 
         Object.assign(this, {
-            logFileFolder: e,
-            qyLogFileSaver: new QyLogFileSaver(this, t)
+            logFileFolder: t,
+            qyLogFileSaver: new r(this, e)
         });
     }
-    save(e, t) {
-        return this.qyLogFileSaver.save(e, t);
+    save(t, e) {
+        return this.qyLogFileSaver.save(t, e);
     }
     getDateDirPath() {
         return this.dateDirPath;
     }
     async start() {
-        var e = new Date(), e = (this.timeoutRef = setTimeout(() => this.switch(), this._getRemainingMilliSeconds(e)), 
-        this.dateDirPath = this._genDateDirPath(e));
-        this.qyLogFileSaver.start(path.join(e, "change.txt")), await this.startFileConsole(e);
+        var t = new Date(), t = (this.timeoutRef = setTimeout(this.switch.bind(this), g(t)), 
+        this.dateDirPath = h(this, t));
+        this.qyLogFileSaver.start(a(t, "change.txt")), await this.startFileConsole(t);
     }
     switch() {
-        var e = new Date(), e = (this.timeoutRef = setTimeout(() => this.switch(), this._getRemainingMilliSeconds(e)), 
-        this._genDateDirPath(e));
-        return this.dateDirPath != e && (this.dateDirPath = e, this.qyLogFileSaver.switch(path.join(e, "change.txt")), 
-        this.switchFileConsole(e)), this;
+        var t = new Date(), t = (this.timeoutRef = setTimeout(this.switch.bind(this), g(t)), 
+        h(this, t));
+        return this.dateDirPath != t && (this.dateDirPath = t, this.qyLogFileSaver.switch(a(t, "change.txt")), 
+        this.switchFileConsole(t)), this;
     }
-    async _op_startFileConsole(e) {
-        await ensureDir(e), setFileConsoleDateDirPath(e, this.options.clearLogAtStart);
+    async _op_startFileConsole(t) {
+        await i(t), e(t, this.options.clearLogAtStart);
     }
     async _op_stop() {
-        clearTimeout(this.timeoutRef), this.timeoutRef = void 0, closeFileConsole(), 
-        await this.qyLogFileSaver.stop();
+        clearTimeout(this.timeoutRef), this.timeoutRef = void 0, t(), await this.qyLogFileSaver.stop();
     }
-    async _op_switchFileConsole(e) {
-        await ensureDir(e), setFileConsoleDateDirPath(e, this.options.clearLogAtStart);
-    }
-    _genDateDirPath(e) {
-        var t = e.getUTCFullYear(), i = e.getUTCMonth() + 1, s = e.getUTCDate(), e = e.getUTCHours();
-        return path.join(this.logFileFolder, t.toString(), this._patch(i), this._patch(s), this._patch(e));
-    }
-    _patch(e) {
-        return e.toString().padStart(2, "0");
-    }
-    _getRemainingMilliSeconds(e) {
-        return 1e3 * (60 * (60 - e.getUTCMinutes()) - e.getUTCSeconds());
+    async _op_switchFileConsole(t) {
+        await i(t), e(t, this.options.clearLogAtStart);
     }
 }
 
-Object.assign(module.exports, {
-    QyFileLogger: QyFileLogger
-});
+function h(t, e) {
+    var i = e.getUTCFullYear(), s = e.getUTCMonth() + 1, o = e.getUTCDate(), e = e.getUTCHours();
+    return a(t.logFileFolder, i.toString(), l(s), l(o), l(e));
+}
+
+function l(t) {
+    return t.toString().padStart(2, "0");
+}
+
+function g(t) {
+    return 1e3 * (60 * (60 - t.getUTCMinutes()) - t.getUTCSeconds());
+}
+
+export {
+    n as QyFileLogger
+};

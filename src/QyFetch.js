@@ -1,38 +1,41 @@
-let QyCD = require("./QyCD.js").QyCD;
+import {
+    QyCD as r
+} from "./QyCD.js";
 
-class QyFetch extends QyCD {
-    constructor(s) {
-        super(s), Object.assign(this, {
+class e extends r {
+    constructor(r) {
+        super(r), Object.assign(this, {
             stack: []
         });
     }
-    dir(s, e) {
-        return this._push(super.dir(s, e));
+    dir(r, e) {
+        return u(this, super.dir(r, e));
     }
-    indexDir(s, e, r) {
-        return this._push(super.indexDir(s, e, r));
+    indexDir(r, e, s) {
+        return u(this, super.indexDir(r, e, s));
     }
-    file(s, e) {
-        return this._push(super.file(s, e));
+    file(r, e) {
+        return u(this, super.file(r, e));
     }
-    view(s, e, r) {
-        return this._push(super.view(s, e, r));
+    view(r, e, s) {
+        return u(this, super.view(r, e, s));
     }
-    queryFiles(s, e, r, t, u) {
-        return this._push(super.queryFiles(s, e, r, t, u));
+    queryFiles(r, e, s, t, i) {
+        return u(this, super.queryFiles(r, e, s, t, i));
     }
-    queryFilesMulti(s, e, r, t) {
-        return this._push(super.queryFilesMulti(s, e, r, t));
+    queryFilesMulti(r, e, s, t) {
+        return u(this, super.queryFilesMulti(r, e, s, t));
     }
     run() {
-        var s = this.stack;
-        return this.stack = [], this.resetCurrentDir(), s;
-    }
-    _push(s) {
-        return this.stack.push(s), this;
+        var r = this.stack;
+        return this.stack = [], this.resetCurrentDir(), r;
     }
 }
 
-Object.assign(module.exports, {
-    QyFetch: QyFetch
-});
+function u(r, e) {
+    return r.stack.push(e), r;
+}
+
+export {
+    e as QyFetch
+};

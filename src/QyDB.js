@@ -1,11 +1,40 @@
-let path = require("node:path"), QyFetch = require("./QyFetch.js").QyFetch, QyBatch = require("./QyBatch.js").QyBatch, QyCache = require("./QyCache.js").QyCache, getDefaultOptions = require("./QyDefaultOptions.js").getDefaultOptions, QyCD = require("./QyCD.js").QyCD, Default_RootFolder = path.join(__dirname, "../data/sampleDataFolder");
+import {
+    join as e
+} from "node:path";
 
-class QyDB extends QyCD {
-    constructor(e = Default_RootFolder, t) {
-        super(), Object.assign(this, {
+import {
+    QyFetch as r
+} from "./QyFetch.js";
+
+import {
+    QyBatch as i
+} from "./QyBatch.js";
+
+import {
+    QyCache as a
+} from "./QyCache.js";
+
+import {
+    getDefaultOptions as n
+} from "./QyDefaultOptions.js";
+
+import {
+    QyCD as t
+} from "./QyCD.js";
+
+import {
+    isNotNullObj as s,
+    __dirname as m
+} from "./QyUtils.js";
+
+let d = e(m, "../data/sampleDataFolder");
+
+class h extends t {
+    constructor(e = d, t) {
+        s(e) && (t = e, e = d), super(), Object.assign(this, {
             rootFolder: e,
             options: {
-                ...getDefaultOptions("QyDB"),
+                ...n("QyDB"),
                 ...t
             }
         });
@@ -15,11 +44,11 @@ class QyDB extends QyCD {
         return this.qyCache || (e = {
             ...this.options,
             ...e
-        }, t = new QyCache(this.rootFolder, e, this), Object.assign(this, {
+        }, t = new a(this.rootFolder, e, this), Object.assign(this, {
             qyCache: t,
-            fetch: new QyFetch(t),
-            batch: new QyBatch(t, e),
-            _immediate: new QyBatch(t, e)
+            fetch: new r(t),
+            batch: new i(t, e),
+            _immediate: new i(t, e)
         }), await t.start()), this;
     }
     async stop() {
@@ -115,8 +144,34 @@ class QyDB extends QyCD {
     callRpc(e, t, r) {
         return this.qyCache.callRpc(e, t, r);
     }
+    fileListToTree(e, t) {
+        var r, i = t, a = {};
+        for (r of e) {
+            var n, s = r.parentList;
+            let t = a;
+            for (n of s) {
+                var {
+                    name: m,
+                    fullPathHash: d
+                } = n;
+                let e = t.subdirMap;
+                e = e || (t.subdirMap = {}), t = (t = e[m]) || (e[m] = {
+                    fullPathHash: d
+                });
+            }
+            let e = t.fileMap;
+            (e = e || (t.fileMap = {}))[r.name] = {
+                fileContent: r.view(i, !0),
+                fileContentKey: r.fileContentKey
+            };
+        }
+        return {
+            tree: a,
+            count: e.length
+        };
+    }
 }
 
-Object.assign(module.exports, {
-    QyDB: QyDB
-});
+export {
+    h as QyDB
+};

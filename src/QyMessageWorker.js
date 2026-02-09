@@ -1,41 +1,55 @@
-let parentPort = require("node:worker_threads").parentPort, getDefaultOptions = require("./QyDefaultOptions.js").getDefaultOptions, logger = require("./QyLogger.js").logger, QyOpRunner = require("./QyOpRunner.js").QyOpRunner;
+import {
+    parentPort as t
+} from "node:worker_threads";
 
-class QyMessageWorker extends QyOpRunner {
-    constructor(e, r, s) {
-        super(e = {
-            ...getDefaultOptions("QyMessageWorker"),
-            ...e
-        }, r, s), parentPort.on("message", async e => {
+import {
+    getDefaultOptions as a
+} from "./QyDefaultOptions.js";
+
+import {
+    logger as n
+} from "./QyLogger.js";
+
+import {
+    QyOpRunner as s
+} from "./QyOpRunner.js";
+
+class e extends s {
+    constructor(s, e, r) {
+        super(s = {
+            ...a("QyMessageWorker"),
+            ...s
+        }, e, r), t.on("message", async s => {
             var {
-                opName: r,
-                _cast: s
-            } = e;
-            if (r) {
-                var t = e.args || [];
+                opName: e,
+                _cast: r
+            } = s;
+            if (e) {
+                var a = s.args || [];
                 try {
-                    var a = await this[r](...t);
-                    s || parentPort.postMessage({
-                        ack: r,
-                        result: a
-                    }), "stop" == r && process.exit();
-                } catch (e) {
-                    logger.error(`Running ${r} failed:`, e), s || parentPort.postMessage({
-                        ack: r,
-                        exception: e
+                    var o = await this[e](...a);
+                    r || t.postMessage({
+                        ack: e,
+                        result: o
+                    }), "stop" == e && process.exit();
+                } catch (s) {
+                    n.error(`Running ${e} failed:`, s), r || t.postMessage({
+                        ack: e,
+                        exception: s
                     });
                 }
-            } else logger.warn("Msg ignored:", e);
+            } else n.warn("Msg ignored:", s);
         });
     }
-    castParent(e, ...r) {
-        parentPort.postMessage({
-            opName: e,
-            args: r,
+    castParent(s, ...e) {
+        t.postMessage({
+            opName: s,
+            args: e,
             _cast: !0
         });
     }
 }
 
-Object.assign(module.exports, {
-    QyMessageWorker: QyMessageWorker
-});
+export {
+    e as QyMessageWorker
+};

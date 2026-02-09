@@ -1,9 +1,15 @@
-let getDefaultOptions = require("./QyDefaultOptions.js").getDefaultOptions, QySaver = require("./QySaver.js").QySaver;
+import {
+    getDefaultOptions as s
+} from "./QyDefaultOptions.js";
 
-class QyJsonSaver extends QySaver {
+import {
+    QySaver as e
+} from "./QySaver.js";
+
+class r extends e {
     constructor(e, r) {
         super(e, {
-            ...getDefaultOptions("QyJsonSaver"),
+            ...s("QyJsonSaver"),
             ...r
         });
     }
@@ -15,6 +21,6 @@ class QyJsonSaver extends QySaver {
     }
 }
 
-Object.assign(module.exports, {
-    QyJsonSaver: QyJsonSaver
-});
+export {
+    r as QyJsonSaver
+};

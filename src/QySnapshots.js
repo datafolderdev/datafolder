@@ -1,27 +1,65 @@
-let fs = require("node:fs"), fsPromises = require("node:fs/promises"), path = require("node:path"), getDefaultOptions = require("./QyDefaultOptions.js").getDefaultOptions, {
-    Hash_Key_Length,
-    folderOrFileExists,
-    listToMap,
-    isEmptyObj
-} = require("./QyUtils.js"), QyBinWriter = require("./QyBinWriter.js").QyBinWriter, {
-    bufferToNums,
-    numsToBuffer,
-    applyAclChange,
-    iterCmdKeys
-} = require("./QyAcl.js"), QyJsonSaver = require("./QyJsonSaver.js").QyJsonSaver, logger = require("./QyLogger.js").logger, isArray = Array.isArray;
+import {
+    close as e,
+    readSync as i,
+    openSync as p
+} from "node:fs";
 
-class QySnapshots {
-    constructor(t, e) {
-        (e = {
-            ...getDefaultOptions("QySnapshots"),
-            ...e
-        }).vLOutdatedPercent = 2 * e.pMOutdatedPercent;
-        var a = path.join(t, "info");
+import {
+    readdir as l,
+    readFile as d
+} from "node:fs/promises";
+
+import {
+    join as s
+} from "node:path";
+
+import m from "node:zlib";
+
+import {
+    getDefaultOptions as n
+} from "./QyDefaultOptions.js";
+
+import {
+    Hash_Key_Length as u,
+    folderOrFileExists as v,
+    listToMap as r,
+    isEmptyObj as f,
+    isString as M
+} from "./QyUtils.js";
+
+import {
+    QyBinWriter as g
+} from "./QyBinWriter.js";
+
+import {
+    bufferToNums as y,
+    numsToBuffer as S,
+    applyAclChange as h,
+    iterCmdKeys as c
+} from "./QyAcl.js";
+
+import {
+    QyJsonSaver as C
+} from "./QyJsonSaver.js";
+
+import {
+    logger as P
+} from "./QyLogger.js";
+
+let x = Array.isArray, O = Buffer.from("\n"), F = Buffer.from("'"), j = F[0], b = Buffer.from("z"), L = b[0];
+
+class t {
+    constructor(t, a) {
+        (a = {
+            ...n("QySnapshots"),
+            ...a
+        }).vLOutdatedPercent = 2 * a.pMOutdatedPercent;
+        var o = s(t, "info");
         Object.assign(this, {
             snapshotFolder: t,
-            snapshotInfoFolder: a,
-            options: e,
-            qyJsonSaver: new QyJsonSaver(a, e),
+            snapshotInfoFolder: o,
+            options: a,
+            qyJsonSaver: new C(o, a),
             numToSnapshotMap: {},
             keyToSnapshotMap: {},
             fDMap: {},
@@ -34,321 +72,307 @@ class QySnapshots {
     async loadSnapshotInfos() {
         let {
             snapshotInfoFolder: t,
-            qyJsonSaver: o,
-            numToSnapshotMap: n
+            qyJsonSaver: f,
+            numToSnapshotMap: h
         } = this;
-        if (await folderOrFileExists(t)) {
-            var e = (await fsPromises.readdir(t)).filter(t => /^[1-9]/.test(t)).map(t => parseInt(t)).sort((t, e) => t - e);
-            let r = 0, s = 0;
-            await Promise.all(e.map(async t => {
-                var e = await o.loadFromFile(t + ".json"), a = n[t] = {
+        if (await v(t)) {
+            var a = (await l(t)).filter(t => /^[1-9]/.test(t)).map(t => parseInt(t)).sort((t, a) => t - a);
+            let p = 0, u = 0;
+            await Promise.all(a.map(async t => {
+                var a = await f.loadFromFile(t + ".json"), o = h[t] = {
                     snapshotNum: t,
-                    info: e,
+                    info: a,
                     posMap: {},
                     outdatedCount: 0
                 };
-                ++this.snapshotCount, t > r && (r = t, s = e.maxChangeId), await this._loadPrefixPM(a);
+                ++this.snapshotCount, t > p && (p = t, u = a.maxChangeId);
+                var t = o, a = N(a = this, t), e = (P.info("Loading " + a), await d(a)), s = e.length, n = t.prefixPM = {};
+                for (let t = 0; t < s; ) {
+                    var r = t + k, i = e.toString("latin1", t, r), i = n[i] = [];
+                    t = y(e, r, i);
+                }
             })), Object.assign(this, {
-                maxSnapshotNum: r,
-                snapshotMaxChangeId: s
-            }), this._setupPrefixMaps(e);
+                maxSnapshotNum: p,
+                snapshotMaxChangeId: u
+            });
+            var {
+                numToSnapshotMap: o,
+                prefixMap: e
+            } = this;
+            for (r of a) {
+                var s, n = o[r], r = n.prefixPM;
+                for (s in r) {
+                    var i = e[s];
+                    i ? i.push(n) : e[s] = [ n ];
+                }
+            }
         }
     }
     closeAllFDs() {
-        var t, e = this.fDMap;
-        for (t in e) fs.close(e[t]), delete e[t];
+        var t, a = this.fDMap;
+        for (t in a) e(a[t]), delete a[t];
     }
     saveKeyValueMap(t) {
-        var e, {
-            keyValueMap: a,
-            info: r
-        } = t, s = (++r.vLVersion, new QyBinWriter()), o = (s.start(this.getVLFilePath(t)), 
-        Object.keys(a).sort()), n = {};
-        let i = 0, p = 0;
-        for (e of o) {
-            var u = a[e];
+        var a, o = this.options.compressValText, {
+            keyValueMap: e,
+            info: s
+        } = t, n = (++s.vLVersion, new g()), r = (n.start(this.getVLFilePath(t)), 
+        Object.keys(e).sort()), i = {};
+        let p = 0, u = 0, f, h;
+        for (a of r) {
+            var l = e[a];
             let t;
-            null == u ? t = Undefined_Mark : (u = Buffer.isBuffer(u) ? u : _valueToBuffer(e, u), 
-            u = (s.save(u), u).length, t = [ i, u ], i += u), n[e] = t, ++p;
+            null == l ? t = T : (h = Buffer.isBuffer(l) ? (f = l, 0) : M(l) ? (f = o ? (n.save(b), 
+            m.zstdCompressSync(l)) : (n.save(F), Buffer.from(l)), 1) : (f = Buffer.from(JSON.stringify(w(a) && !x(l) ? Object.keys(l) : l)), 
+            0), n.save([ f, O ]), l = h + f.length, t = [ p, l ], p += l + 1), i[a] = t, 
+            ++u;
         }
         return Object.assign(t, {
-            posMap: n,
+            posMap: i,
             outdatedCount: 0
-        }), Object.assign(r, {
-            totalCount: p,
+        }), Object.assign(s, {
+            totalCount: u,
             outdatedCount: 0
-        }), Promise.all([ this.savePosMap(t, o), s.stop() ]);
+        }), Promise.all([ this.savePosMap(t, r), n.stop() ]);
     }
     addMaxSnapshot(t) {
-        var e, {
-            numToSnapshotMap: a,
-            keyToSnapshotMap: r
+        var a, {
+            numToSnapshotMap: o,
+            keyToSnapshotMap: e
         } = this, {
             posMap: s,
-            keyValueMap: o,
-            snapshotNum: n,
+            keyValueMap: n,
+            snapshotNum: r,
             info: i
         } = t, i = i.maxChangeId, i = (Object.assign(this, {
-            maxSnapshotNum: n,
+            maxSnapshotNum: r,
             snapshotMaxChangeId: i
-        }), o || s);
-        for (e in i) r[e] = t;
-        a[n] = t, ++this.snapshotCount;
+        }), n || s);
+        for (a in i) e[a] = t;
+        o[r] = t, ++this.snapshotCount;
     }
     removeKey(t) {
-        var e = this.keyToSnapshotMap, a = e[t];
-        if (a) return this.removeKeyFromSnapshot(a, t), delete e[t], !0;
+        var a = this.keyToSnapshotMap, o = a[t];
+        if (o) return this.removeKeyFromSnapshot(o, t), delete a[t], !0;
     }
-    applyCmdObj(t, e, a) {
-        if (null != a) {
-            var r = a.length;
-            for (let t = 0; t < r; t += 2) {
-                var s = a[t], o = a[t + 1];
-                e[s] = null != o && _isListKey(s) ? listToMap(o) : o;
+    applyCmdObj(t, a, o) {
+        if (null != o) {
+            var e = o.length;
+            for (let t = 0; t < e; t += 2) {
+                var s = o[t], n = o[t + 1];
+                a[s] = null != n && w(s) ? r(n) : n;
             }
         }
-        iterCmdKeys(t, t => {
-            t in e || (e[t] = this.getValueSync(t)), this.removeKey(t);
-        }), applyAclChange(e, t);
+        c(t, t => {
+            t in a || (a[t] = this.getValueSync(t)), this.removeKey(t);
+        }), h(a, t);
     }
     getValueSync(t) {
-        var e, a, r = this._getSnapshotByKey(t);
-        if (r) return {
-            keyValueMap: a,
-            posMap: e
-        } = r, a ? a[t] : (a = e[t]) && ([ e, a ] = a, 0 != a) ? this._readValFromFile(r, t, e, a) : void 0;
-    }
-    iterPMBuffer(e, a) {
-        var r = e.length;
-        for (let t = 0; t < r; ) {
-            var s = t + Hash_Key_Length, o = e.toString("latin1", t, s), n = [];
-            t = bufferToNums(e, s, n), a(o, n);
+        var a = ((t, a) => {
+            let {
+                keyToSnapshotMap: o,
+                prefixMap: e
+            } = t, s = o[a];
+            if (s) return s;
+            var n = I(a), r = e[n];
+            if (r) for (;0 < r.length; ) {
+                s = r.pop();
+                var i = ((t, a, o) => {
+                    var e, {
+                        posMap: s,
+                        prefixPM: n
+                    } = a;
+                    if (n = n[o]) return [ n, e ] = n, n = V(t, t.getPMFilePath(a), n, e), 
+                    t.loadPartialPosMapBuffer(a, o, n), s;
+                })(t, s, n);
+                if (i && a in i) return s;
+            }
+        })(this, t);
+        if (a) {
+            var {
+                keyValueMap: o,
+                posMap: e
+            } = a;
+            if (o) return o[t];
+            o = e[t];
+            if (o) {
+                var [ e, o ] = o;
+                if (0 != o) {
+                    var s = this;
+                    if (a = s.getVLFilePath(a), s = V(s, a, e, o)) return (a = s[0]) == j ? s.toString("utf8", 1) : a == L ? m.zstdDecompressSync(s.subarray(1)).toString() : (e = JSON.parse(s), 
+                    w(t) ? r(e) : e);
+                }
+            }
         }
     }
-    loadPartialPosMapBuffer(a, t, e) {
+    iterPMBuffer(a, o) {
+        var e = a.length;
+        for (let t = 0; t < e; ) {
+            var s = t + u, n = a.toString("latin1", t, s), r = [];
+            t = y(a, s, r), o(n, r);
+        }
+    }
+    loadPartialPosMapBuffer(o, t, a) {
         let {
-            posMap: r,
+            posMap: e,
             prefixPM: s
-        } = a, o = (delete s[t], this).keyToSnapshotMap;
-        this.iterPMBuffer(e, (t, e) => {
-            t in o ? ++a.outdatedCount : (r[t] = e, o[t] = a);
+        } = o, n = (delete s[t], this).keyToSnapshotMap;
+        this.iterPMBuffer(a, (t, a) => {
+            t in n ? ++o.outdatedCount : (e[t] = a, n[t] = o);
         });
     }
     delSnapshot(t) {
-        delete this.numToSnapshotMap[t.snapshotNum], --this.snapshotCount, this._closeFD(this.getVLFilePath(t)), 
-        this._closeFD(this.getPMFilePath(t));
+        delete this.numToSnapshotMap[t.snapshotNum], --this.snapshotCount, a(this, this.getVLFilePath(t)), 
+        a(this, this.getPMFilePath(t));
     }
     calOutdates() {
-        var t, e = [], a = [], r = [], s = [], {
-            options: o,
-            numToSnapshotMap: n
+        var t, a = [], o = [], e = [], s = [], {
+            options: n,
+            numToSnapshotMap: r
         } = this, {
             pMOutdatedPercent: i,
             vLOutdatedPercent: p
-        } = o;
-        for (t in n) {
-            var u, h = n[t];
-            h.isOut || (100 == (u = _getTotalOutdatedPercent(h)) ? (this.delSnapshot(h), 
-            e.push(t)) : p < u ? (this._canCombine(h) ? a : s).push(h) : _getCurrentOutdatedPercent(h) > i ? r.push(h) : this._isSmallSnapshot(h) && this._canCombine(h) && a.push(h));
+        } = n;
+        for (t in r) {
+            var u, f = r[t];
+            f.isOut || (100 == (u = Q(f)) ? (this.delSnapshot(f), a.push(t)) : p < u ? (B(f) ? o : s).push(f) : Math.round(f.outdatedCount / f.info.totalCount * 100) > i ? e.push(f) : (u = this, 
+            f.info.totalCount < u.options.minSnapshotKeyCount && B(f) && o.push(f)));
         }
-        return 1 == a.length && _getTotalOutdatedPercent(a[0]) < p && (a.length = 0), 
-        0 < r.length && logger.log("pMCompacts:" + r.map(t => t.snapshotNum)), 0 < s.length && logger.log("vLCompacts:" + s.map(t => t.snapshotNum)), 
-        0 < a.length && logger.log("combiningSnapshots:" + a.map(t => t.snapshotNum)), 
+        return 1 == o.length && Q(o[0]) < p && (o.length = 0), 0 < e.length && P.log("pMCompacts:" + e.map(t => t.snapshotNum)), 
+        0 < s.length && P.log("vLCompacts:" + s.map(t => t.snapshotNum)), 0 < o.length && P.log("combiningSnapshots:" + o.map(t => t.snapshotNum)), 
         {
-            emptySnapshotNumList: e,
-            combiningSnapshotList: a,
-            pMCompactSnapshotList: r,
+            emptySnapshotNumList: a,
+            combiningSnapshotList: o,
+            pMCompactSnapshotList: e,
             vLCompactSnapshotList: s
         };
     }
     getMaxCombinedSnapshot(t) {
-        let e, a;
-        for (var r of t) {
-            var s = r.snapshotNum;
-            (!a || a < s) && (e = r, a = s);
+        let a, o;
+        for (var e of t) {
+            var s = e.snapshotNum;
+            (!o || o < s) && (a = e, o = s);
         }
-        return e;
+        return a;
     }
     getPMFilePath(t) {
         var {
             snapshotNum: t,
-            info: e
+            info: a
         } = t;
-        return path.join(this.snapshotFolder, "" + t, e.pMVersion + "_pM.txt");
+        return s(this.snapshotFolder, "" + t, a.pMVersion + "_pM.txt");
     }
     getVLFilePath(t) {
         var {
             snapshotNum: t,
-            info: e
+            info: a
         } = t;
-        return path.join(this.snapshotFolder, "" + t, e.vLVersion + "_vL.txt");
+        return s(this.snapshotFolder, "" + t, a.vLVersion + "_vL.txt");
     }
-    saveSnapshotInfo(t, e) {
+    saveSnapshotInfo(t, a) {
         var {
-            outdatedCount: a,
-            totalCount: r
-        } = e;
-        return e.outdated = Math.round(100 * a / r) + "%", this.qyJsonSaver.saveToFile(e, t + ".json", !0);
+            outdatedCount: o,
+            totalCount: e
+        } = a;
+        return a.outdated = Math.round(100 * o / e) + "%", P.log("Saving snapshotInfo:" + t), 
+        this.qyJsonSaver.saveToFile(a, t + ".json", !0);
     }
-    savePosMap(t, e) {
-        var a, {
-            outdatedCount: r,
+    savePosMap(t, a) {
+        var o, {
+            outdatedCount: e,
             info: s,
-            posMap: o
-        } = t, n = (s.outdatedCount += r, t.outdatedCount = 0, ++s.pMVersion, new QyBinWriter()), i = (n.start(this.getPMFilePath(t)), 
+            posMap: n
+        } = t, r = (s.outdatedCount += e, t.outdatedCount = 0, ++s.pMVersion, new g()), i = (r.start(this.getPMFilePath(t)), 
         t.prefixPM = {});
-        let p = 0, u = 0, h;
-        for (a of e = e || Object.keys(o).sort()) {
-            null == h ? h = _getPrefix(a) : a.startsWith(h) || (i[h] = [ p, u ], 
-            h = _getPrefix(a), p += u, u = 0);
-            var l = Buffer.from(a), f = numsToBuffer(o[a]);
-            n.save(l), n.save(f), u += l.length + f.length;
+        let p = 0, u = 0, f;
+        for (o of a = a || Object.keys(n).sort()) {
+            null == f ? f = I(o) : o.startsWith(f) || (i[f] = [ p, u ], f = I(o), 
+            p += u, u = 0);
+            var h = Buffer.from(o), l = S(n[o]);
+            r.save([ h, l ]), u += h.length + l.length;
         }
-        return null != h && (i[h] = [ p, u ]), Promise.all([ n.stop(), this._savePrefixPM(t) ]);
+        return null != f && (i[f] = [ p, u ]), Promise.all([ r.stop(), ((t, a) => {
+            var o, e = new g(), s = (e.start(N(t, a)), a).prefixPM;
+            for (o in s) e.save([ Buffer.from(o), S(s[o]) ]);
+            return e.stop();
+        })(this, t) ]);
     }
     isEmptySnapshot(t) {
         var {
             info: t,
-            outdatedCount: e
+            outdatedCount: a
         } = t;
-        return e + t.outdatedCount == t.totalCount;
+        return a + t.outdatedCount == t.totalCount;
     }
-    _setupPrefixMaps(t) {
-        var e, {
-            numToSnapshotMap: a,
-            prefixMap: r
-        } = this;
-        for (e of t) {
-            var s, o = a[e], n = o.prefixPM;
-            for (s in n) {
-                var i = r[s];
-                i ? i.push(o) : r[s] = [ o ];
-            }
-        }
-    }
-    async _loadPrefixPM(t) {
-        var e = this._getPrefixPMFilePath(t), a = (logger.info("Loading " + e), 
-        await fsPromises.readFile(e)), r = a.length, s = t.prefixPM = {};
-        for (let t = 0; t < r; ) {
-            var o = t + Prefix_Length, n = s[a.toString("latin1", t, o)] = [];
-            t = bufferToNums(a, o, n);
-        }
-    }
-    _loadPartialPosMap(t, e) {
-        var a, {
-            posMap: r,
-            prefixPM: s
-        } = t, s = s[e];
-        if (s) return [ s, a ] = s, s = this._readBufferFromFile(this.getPMFilePath(t), s, a), 
-        this.loadPartialPosMapBuffer(t, e, s), r;
-    }
-    _getSnapshotByKey(t) {
+    removeKeyFromSnapshot(t, a) {
         var {
-            keyToSnapshotMap: e,
-            prefixMap: a
-        } = this;
-        let r = e[t];
-        if (r) return r;
-        var s = _getPrefix(t), o = a[s];
-        if (o) for (;0 < o.length; ) {
-            r = o.pop();
-            var n = this._loadPartialPosMap(r, s);
-            if (n && t in n) return r;
-        }
-    }
-    _readValFromFile(t, e, a, r) {
-        t = this.getVLFilePath(t), t = this._readBufferFromFile(t, a, r);
-        if (t) return _parseBuffer(e, t);
-    }
-    _readBufferFromFile(e, a, r) {
-        var s = this._getFD(e), o = Buffer.allocUnsafe(r);
-        for (let t = 0; t < r; ) {
-            var n = fs.readSync(s, o, t, r - t, a + t);
-            if (0 == n) return void logger.error(`readSync ${e} at ${a + t} returning 0 byte`);
-            t += n;
-        }
-        return o;
-    }
-    _canCombine(t) {
-        var {
-            keyValueMap: e,
-            prefixPM: a
+            posMap: o,
+            keyValueMap: e
         } = t;
-        return e || null == a || isEmptyObj(t.prefixPM);
+        e && delete e[a], o && delete o[a], ++t.outdatedCount;
     }
-    _isSmallSnapshot(t) {
-        return t.info.totalCount < this.options.minSnapshotKeyCount;
-    }
-    _getPrefixPMFilePath(t) {
-        var {
-            snapshotNum: t,
-            info: e
-        } = t;
-        return path.join(this.snapshotFolder, "" + t, e.pMVersion + "_prefixPM.txt");
-    }
-    removeKeyFromSnapshot(t, e) {
-        var {
-            posMap: a,
-            keyValueMap: r
-        } = t;
-        r && delete r[e], a && delete a[e], ++t.outdatedCount;
-    }
-    _getFD(e) {
-        var t = this.fDMap;
-        let a = t[e];
-        if (!a) {
-            logger.info("Opening " + e);
+}
+
+function V(t, a, o, e) {
+    var s = ((t, a) => {
+        let o = t.fDMap, e = o[a];
+        if (!e) {
+            P.info("Opening " + a);
             try {
-                a = t[e] = fs.openSync(e, "r");
+                e = o[a] = p(a, "r");
             } catch (t) {
-                throw logger.error(`Opening ${e} failed:`, t), t;
+                throw P.error(`Opening ${a} failed:`, t), t;
             }
         }
-        return a;
+        return e;
+    })(t, a), n = Buffer.allocUnsafe(e);
+    for (let t = 0; t < e; ) {
+        var r = i(s, n, t, e - t, o + t);
+        if (0 == r) return void P.error(`readSync ${a} at ${o + t} returning 0 byte`);
+        t += r;
     }
-    _closeFD(t) {
-        var e = this.fDMap, a = e[t];
-        null != a && (fs.close(a), delete e[t]);
-    }
-    _savePrefixPM(t) {
-        var e, a = new QyBinWriter(), r = (a.start(this._getPrefixPMFilePath(t)), 
-        t).prefixPM;
-        for (e in r) a.save(Buffer.from(e)), a.save(numsToBuffer(r[e]));
-        return a.stop();
-    }
+    return n;
 }
 
-let Undefined_Mark = [ 0, 0 ], Prefix_Length = 3;
-
-function _getPrefix(t) {
-    return t.substring(0, Prefix_Length);
+function B(t) {
+    var {
+        keyValueMap: a,
+        prefixPM: o
+    } = t;
+    return a || null == o || f(t.prefixPM);
 }
 
-function _isListKey(t) {
+function N(t, a) {
+    var {
+        snapshotNum: a,
+        info: o
+    } = a;
+    return s(t.snapshotFolder, "" + a, o.pMVersion + "_prefixPM.txt");
+}
+
+function a(t, a) {
+    var t = t.fDMap, o = t[a];
+    null != o && (e(o), delete t[a]);
+}
+
+let T = [ 0, 0 ], k = 3;
+
+function I(t) {
+    return t.substring(0, k);
+}
+
+function w(t) {
     return !t.startsWith("c");
 }
 
-function _valueToBuffer(t, e) {
-    return Buffer.from(JSON.stringify(_isListKey(t) && !isArray(e) ? Object.keys(e) : e) + "\n");
-}
-
-function _parseBuffer(t, e) {
-    e = JSON.parse(e);
-    return _isListKey(t) ? listToMap(e) : e;
-}
-
-function _getTotalOutdatedPercent(t) {
+function Q(t) {
     var {
         outdatedCount: t,
-        info: e
-    } = t, a = e.totalCount, t = t + e.outdatedCount;
-    return t == a ? 100 : Math.round(t / a * 100);
+        info: a
+    } = t, o = a.totalCount, t = t + a.outdatedCount;
+    return t == o ? 100 : Math.round(t / o * 100);
 }
 
-function _getCurrentOutdatedPercent(t) {
-    return Math.round(t.outdatedCount / t.info.totalCount * 100);
-}
-
-Object.assign(module.exports, {
-    QySnapshots: QySnapshots
-});
+export {
+    t as QySnapshots
+};

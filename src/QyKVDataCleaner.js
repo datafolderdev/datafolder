@@ -1,17 +1,23 @@
-let QyMessager = require("./QyMessager.js").QyMessager, getDefaultOptions = require("./QyDefaultOptions.js").getDefaultOptions;
+import {
+    QyMessager as e
+} from "./QyMessager.js";
 
-class QyKVDataCleaner extends QyMessager {
+import {
+    getDefaultOptions as r
+} from "./QyDefaultOptions.js";
+
+class s extends e {
     constructor(e, s, a) {
         super(e, "QyKVDataCleaner_Worker.js", {
             kvFolder: s,
             options: a = {
-                ...getDefaultOptions("QyKVDataCleaner"),
+                ...r("QyKVDataCleaner"),
                 ...a
             }
         }, a, [], [ "cleanAclFiles", "cleanPMFiles", "cleanVLFiles", "removeSnapshotsFiles" ]);
     }
 }
 
-Object.assign(module.exports, {
-    QyKVDataCleaner: QyKVDataCleaner
-});
+export {
+    s as QyKVDataCleaner
+};

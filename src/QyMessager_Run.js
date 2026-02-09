@@ -1,13 +1,26 @@
-let path = require("node:path"), {
-    getEnvironmentData,
-    workerData
-} = require("node:worker_threads"), logger = require("./QyLogger.js").logger;
+import {
+    resolve as a,
+    join as o
+} from "node:path";
+
+import {
+    getEnvironmentData as t,
+    workerData as i
+} from "node:worker_threads";
+
+import {
+    logger as m
+} from "./QyLogger.js";
+
+import {
+    __dirname as s
+} from "./QyUtils.js";
 
 (async () => {
-    logger.level = getEnvironmentData("logLevel");
+    m.level = t("logLevel");
     var {
         workerTypeFileName: e,
         initArgMap: r
-    } = workerData;
-    new (require(path.join(__dirname, e)))(r);
+    } = i;
+    new (await import("file://" + a(o(s, e)))).default(r);
 })();

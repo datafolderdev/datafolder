@@ -1,19 +1,33 @@
-let QyItem = require("./QyItem.js").QyItem, {
-    SpecialOperators,
-    SpecialFilePaths,
-    getContentKey,
-    isNotNullObj,
-    isSimpleType,
-    fromSingleName
-} = require("./QyUtils.js"), getValByNamePath = require("./QyFileContentUtils.js").getValByNamePath, QyIndexPropTree = require("./QyIndexPropTree.js").QyIndexPropTree, isArray = Array.isArray, IndexPropPathsFileName = SpecialFilePaths.IndexPropPathsFileName, {
-    $spec,
-    $raw,
-    $clone
-} = SpecialOperators;
+import {
+    QyItem as e
+} from "./QyItem.js";
 
-class QyFile extends QyItem {
-    constructor(e, t, i) {
-        super(e, t, i), t && (++i._fileCount, ++i.fileMapChangeCount), this.cChangeId = 0;
+import {
+    SpecialOperators as t,
+    SpecialFilePaths as n,
+    getContentKey as i,
+    isNotNullObj as a,
+    isSimpleType as C,
+    fromSingleName as s
+} from "./QyUtils.js";
+
+import {
+    getValByNamePath as r
+} from "./QyFileContentUtils.js";
+
+import {
+    QyIndexPropTree as f
+} from "./QyIndexPropTree.js";
+
+let d = Array.isArray, u = n.IndexPropPathsFileName, {
+    $spec: h,
+    $raw: c,
+    $clone: l
+} = t;
+
+class o extends e {
+    constructor(e, t, n) {
+        super(e, t, n), t && (++n._fileCount, ++n.fileMapChangeCount), this.cChangeId = 0;
     }
     get created() {
         return this._created;
@@ -24,10 +38,13 @@ class QyFile extends QyItem {
         ++t.fileMapChangeCount);
     }
     get fileContentKey() {
-        return this._fileContentKey || (this._fileContentKey = getContentKey(this.fullPathHash));
+        return this._fileContentKey || (this._fileContentKey = i(this.fullPathHash));
     }
     get fileContent() {
-        return this._ensureFileContentLoaded(), this.visited = !0, this._fileContent;
+        var e, t = this;
+        return t.created && null == t._fileContent && !t.fileContentLoaded && (t.fileContentLoaded = !0, 
+        e = t.qyCache) && (t._fileContent = e.qyKVData.getValueSync(t.fileContentKey)), 
+        this.visited = !0, this._fileContent;
     }
     set fileContent(e) {
         this.visited = !0, this._fileContent = e;
@@ -36,15 +53,15 @@ class QyFile extends QyItem {
         var {
             created: e,
             _qyIndexPropTree: t,
-            name: i,
-            fileContent: n,
+            name: n,
+            fileContent: i,
             underHiddenFolder: r
         } = this;
-        if (e && r && i == IndexPropPathsFileName) {
+        if (e && r && n == u) {
             if (t) return t;
-            var l, s = this._qyIndexPropTree = new QyIndexPropTree();
-            for (l in n) s.insert(fromSingleName(l));
-            return s;
+            var l, o = this._qyIndexPropTree = new f();
+            for (l in i) o.insert(s(l));
+            return o;
         }
     }
     get isFile() {
@@ -52,7 +69,7 @@ class QyFile extends QyItem {
     }
     get contentAsText() {
         var e = this.fileContent;
-        return null == e ? "" : isNotNullObj(e) ? JSON.stringify(e) : e.toString();
+        return null == e ? "" : a(e) ? JSON.stringify(e) : e.toString();
     }
     get clonedContent() {
         return structuredClone(this.fileContent);
@@ -60,65 +77,60 @@ class QyFile extends QyItem {
     setContent(e) {
         this.fileContent = e;
     }
-    view(e = $clone, t) {
-        var i = this.fileContent;
-        return null == i || isSimpleType(i) ? i : this._viewBySpec(i, e, t);
+    view(e = l, t) {
+        var n = this.fileContent;
+        return null == n || C(n) ? n : function t(n, i, r, l) {
+            if (r === c) return i;
+            if (null == r) return;
+            if (C(r)) return r ? l ? i : structuredClone(i) : void 0;
+            let e = r.$link;
+            if (null != e) return y(n, i, e, r[h]);
+            if (C(i)) return i;
+            d(r) && (r = Object.fromEntries(r.filter(e => e).map(e => [ e, 1 ])));
+            let o = d(i) ? [] : {};
+            let {
+                $all: s,
+                "**": a
+            } = r;
+            if (s || a) for (var f in i) {
+                let e = r[f] ?? s ?? a;
+                e && (o[f] = t(n, i[f], e, l));
+            } else for (var u in r) {
+                let e = r[u];
+                e && (o[u] = t(n, i[u], e, l));
+            }
+            return o;
+        }(this, n, e, t);
     }
-    getProp(e, t = $clone, i) {
-        var n;
-        if (t) return e = getValByNamePath(this.fileContent, isArray(e) ? e : [ e ]), 
-        n = t.$link, null != n ? this._link(e, n, t[$spec], i) : i || t === $raw ? e : structuredClone(e);
+    prop(e, t = l, n) {
+        var i;
+        if (t) return e = r(this.fileContent, d(e) ? e : [ e ]), i = t.$link, null != i ? y(this, e, i, t[h], n) : n || t === c ? e : structuredClone(e);
     }
     unloadFileContent() {
         this.created && this.fileContentLoaded && null != this._fileContent && (this._fileContent = void 0, 
         this.fileContentLoaded = !1);
     }
-    _ensureFileContentLoaded() {
-        var e;
-        this.created && null == this._fileContent && !this.fileContentLoaded && (this.fileContentLoaded = !0, 
-        e = this.qyCache, e) && (this._fileContent = e.qyKVData.getValueSync(this.fileContentKey));
-    }
-    _link(e, t, i, n) {
-        let r = this.qyCache.getDir(t);
-        if (isArray(e)) return e.map(e => this._getLinkedFileContent(r, e, i, n));
-        if (isNotNullObj(e)) {
-            var l, s = {};
-            for (l in e) s[l] = this._getLinkedFileContent(r, l, i, n);
-            return s;
-        }
-        return this._getLinkedFileContent(r, e, i, n);
-    }
-    _getLinkedFileContent(e, t, i, n) {
-        if (e) {
-            e = e.getFile(t);
-            if (e) return e.view(i, n);
-        }
-        return t;
-    }
-    _viewBySpec(e, t, i) {
-        if (t === $raw) return e;
-        if (null != t) {
-            if (isSimpleType(t)) return t ? i ? e : structuredClone(e) : void 0;
-            var n = t.$link;
-            if (null != n) return this._link(e, n, t[$spec]);
-            if (isSimpleType(e)) return e;
-            isArray(t) && (t = Object.fromEntries(t.filter(e => e).map(e => [ e, 1 ])));
-            var r = isArray(e) ? [] : {}, {
-                $all: l,
-                "**": s
-            } = t;
-            if (l || s) for (var o in e) {
-                var a = t[o] ?? l ?? s;
-                a && (r[o] = this._viewBySpec(e[o], a, i));
-            } else for (var h in t) {
-                var u = t[h];
-                u && (r[h] = this._viewBySpec(e[h], u, i));
-            }
-            return r;
-        }
-    }
 }
 
-Object.assign(module.exports, {
-    QyFile: QyFile
-});
+function p(e, t, n, i) {
+    if (e) {
+        e = e.getFile(t);
+        if (e) return e.view(n, i);
+    }
+    return t;
+}
+
+function y(e, t, n, i, r) {
+    let l = e.qyCache.getDir(n);
+    if (d(t)) return t.map(e => p(l, e, i, r));
+    if (a(t)) {
+        var o, s = {};
+        for (o in t) s[o] = p(l, o, i, r);
+        return s;
+    }
+    return p(l, t, i, r);
+}
+
+export {
+    o as QyFile
+};

@@ -1,24 +1,48 @@
-let path = require("node:path"), fsPromises = require("node:fs/promises"), getDefaultOptions = require("./QyDefaultOptions.js").getDefaultOptions, QyMessageWorker = require("./QyMessageWorker.js").QyMessageWorker, QyKVDataCleaner = require("./QyKVDataCleaner.js").QyKVDataCleaner, QySnapshots = require("./QySnapshots.js").QySnapshots, {
-    isEmptyObj,
-    listToMap,
-    readBufferAsync
-} = require("./QyUtils.js");
+import {
+    join as t
+} from "node:path";
 
-class QySnapshotCompactor_Worker extends QyMessageWorker {
+import {
+    open as h
+} from "node:fs/promises";
+
+import {
+    getDefaultOptions as e
+} from "./QyDefaultOptions.js";
+
+import {
+    QyMessageWorker as a
+} from "./QyMessageWorker.js";
+
+import {
+    QyKVDataCleaner as p
+} from "./QyKVDataCleaner.js";
+
+import {
+    QySnapshots as n
+} from "./QySnapshots.js";
+
+import {
+    isEmptyObj as r,
+    listToMap as y,
+    readBufferAsync as l
+} from "./QyUtils.js";
+
+class s extends a {
     constructor({
         kvFolder: a,
         options: s
     }) {
         super(s = {
-            ...getDefaultOptions("QySnapshotCompactor_Worker"),
+            ...e("QySnapshotCompactor_Worker"),
             ...s
         }, [], [ "compactSnapshots", "saveSnapshotInfos" ]);
-        var e = path.join(a, "snapshot");
+        var o = t(a, "snapshot");
         Object.assign(this, {
             kvFolder: a,
-            snapshotFolder: e,
-            qySnapshots: new QySnapshots(e, s),
-            qyKVDataCleaner: new QyKVDataCleaner(this, a, s),
+            snapshotFolder: o,
+            qySnapshots: new n(o, s),
+            qyKVDataCleaner: new p(this, a, s),
             pMInfoMap: {},
             vLInfoMap: {}
         });
@@ -29,123 +53,120 @@ class QySnapshotCompactor_Worker extends QyMessageWorker {
     async stop() {
         await this.qyKVDataCleaner.stop();
     }
-    async _op_compactSnapshots(a, e, s) {
-        var o = {}, t = [];
+    async _op_compactSnapshots(a, o, s) {
+        var t = {}, e = [];
         if (0 < a.length) {
-            let s = o.pMUpdates = {};
-            t.push(...a.map(a => this._compactPosMap(a, s)));
+            let s = t.pMUpdates = {};
+            e.push(...a.map(a => (async (a, s, o) => {
+                var {
+                    qySnapshots: t,
+                    pMInfoMap: e
+                } = a, {
+                    snapshotNum: p,
+                    info: n,
+                    prefixPM: i
+                } = s;
+                (null == i || r(i) || await f(a, s)) && (await t.savePosMap(s), 
+                e[p] = n, o[p] = s.prefixPM);
+            })(this, a, s)));
         }
-        if (0 < e.length) {
-            let s = o.vLUpdates = {};
-            t.push(...e.map(a => this._compactValueList(a, s)));
+        if (0 < o.length) {
+            let s = t.vLUpdates = {};
+            e.push(...o.map(a => (async (a, s, o) => {
+                var t, {
+                    qySnapshots: e,
+                    vLInfoMap: p
+                } = a;
+                await f(a, s) && (await M(a, s), await e.saveKeyValueMap(s), {
+                    snapshotNum: a,
+                    info: e,
+                    posMap: s,
+                    prefixPM: t
+                } = s, p[a] = e, o[a] = {
+                    posMap: s,
+                    prefixPM: t
+                });
+            })(this, a, s)));
         }
-        0 < s.length && t.push(this._combinePMLoadedSnapshots(s, o)), await Promise.all(t), 
-        this.castParent("onCompactUpdates", o);
+        0 < s.length && e.push((async (a, s, o) => {
+            var t, {
+                qySnapshots: e,
+                vLInfoMap: p
+            } = a, n = e.getMaxCombinedSnapshot(s), {
+                snapshotNum: i,
+                info: r,
+                keyValueMap: f
+            } = (await M(a, n), n), h = (Object.assign(n, {
+                posMap: void 0,
+                prefixPM: void 0
+            }), []);
+            for (t of s) t != n && (h.push(t.snapshotNum), await M(a, t), Object.assign(f, t.keyValueMap), 
+            Object.assign(t, {
+                keyValueMap: void 0,
+                posMap: void 0,
+                prefixPM: void 0
+            }));
+            await e.saveKeyValueMap(n), p[i] = r, o.combineUpdate = {
+                snapshotNum: i,
+                combinedSnapshotNumList: h,
+                posMap: n.posMap
+            };
+        })(this, s, t)), await Promise.all(e), this.castParent("onCompactUpdates", t);
     }
     async _op_saveSnapshotInfos(a) {
-        var s, e, {
-            qySnapshots: o,
-            pMInfoMap: t,
+        var s, o, {
+            qySnapshots: t,
+            pMInfoMap: e,
             vLInfoMap: p,
             qyKVDataCleaner: n
         } = this, i = (Object.assign(this, {
             pMInfoMap: {},
             vLInfoMap: {}
-        }), listToMap(a)), r = [];
-        for (s in t) s in i && r.push(o.saveSnapshotInfo(s, t[s]));
-        for (e in p) e in i && r.push(o.saveSnapshotInfo(e, p[e]));
+        }), y(a)), r = [];
+        for (s in e) s in i && r.push(t.saveSnapshotInfo(s, e[s]));
+        for (o in p) o in i && r.push(t.saveSnapshotInfo(o, p[o]));
         if (0 < r.length) {
             await Promise.all(r);
-            var h, l, M = [];
-            for (h in t) {
-                var f = t[h];
-                M.push([ h, f.pMVersion ]);
+            var f, h, l = [];
+            for (f in e) {
+                var M = e[f];
+                l.push([ f, M.pMVersion ]);
             }
-            for (l in p) {
-                var y = p[l];
-                M.push([ l, y.pMVersion ]), n.cleanVLFiles(l, y.vLVersion);
+            for (h in p) {
+                var v = p[h];
+                l.push([ h, v.pMVersion ]), n.cleanVLFiles(h, v.vLVersion);
             }
-            n.cleanPMFiles(M);
+            n.cleanPMFiles(l);
         }
-    }
-    async _combinePMLoadedSnapshots(a, s) {
-        var e, {
-            qySnapshots: o,
-            vLInfoMap: t
-        } = this, p = o.getMaxCombinedSnapshot(a), {
-            snapshotNum: n,
-            info: i,
-            keyValueMap: r
-        } = (await this._loadKVMap(p), p), h = (Object.assign(p, {
-            posMap: void 0,
-            prefixPM: void 0
-        }), []);
-        for (e of a) e != p && (h.push(e.snapshotNum), await this._loadKVMap(e), 
-        Object.assign(r, e.keyValueMap), Object.assign(e, {
-            keyValueMap: void 0,
-            posMap: void 0,
-            prefixPM: void 0
-        }));
-        await o.saveKeyValueMap(p), t[n] = i, s.combineUpdate = {
-            snapshotNum: n,
-            combinedSnapshotNumList: h,
-            posMap: p.posMap
-        };
-    }
-    async _compactValueList(a, s) {
-        var e, o, {
-            qySnapshots: t,
-            vLInfoMap: p
-        } = this;
-        await this._loadPosMap(a) && (await this._loadKVMap(a), await t.saveKeyValueMap(a), 
-        {
-            snapshotNum: t,
-            info: a,
-            posMap: e,
-            prefixPM: o
-        } = a, p[t] = a, s[t] = {
-            posMap: e,
-            prefixPM: o
-        });
-    }
-    async _compactPosMap(a, s) {
-        var {
-            qySnapshots: e,
-            pMInfoMap: o
-        } = this, {
-            snapshotNum: t,
-            info: p,
-            prefixPM: n
-        } = a;
-        (null == n || isEmptyObj(n) || await this._loadPosMap(a)) && (await e.savePosMap(a), 
-        o[t] = p, s[t] = a.prefixPM);
-    }
-    async _loadPosMap(a) {
-        var s = this.qySnapshots;
-        let {
-            prefixPM: e,
-            posMap: o
-        } = a;
-        var t, p = s.getPMFilePath(a), n = await fsPromises.open(p);
-        for (t of Object.keys(e).sort()) {
-            var [ i, r ] = e[t], i = await readBufferAsync(p, n, i, r);
-            if (!i) return void n.close();
-            s.iterPMBuffer(i, (a, s) => o[a] = s);
-        }
-        return n.close(), !0;
-    }
-    async _loadKVMap(a) {
-        var s, e = this.qySnapshots, o = a.posMap, t = a.keyValueMap = {}, p = e.getVLFilePath(a), n = await fsPromises.open(p);
-        for (s of Object.keys(o).sort()) {
-            var [ i, r ] = o[s];
-            if (0 < r) {
-                i = await readBufferAsync(p, n, i, r);
-                if (!i) return void n.close();
-                t[s] = i;
-            } else t[s] = void 0;
-        }
-        return n.close(), !0;
     }
 }
 
-module.exports = QySnapshotCompactor_Worker;
+async function f(a, s) {
+    var o = a.qySnapshots;
+    let {
+        prefixPM: t,
+        posMap: e
+    } = s;
+    var p, n = o.getPMFilePath(s), i = await h(n);
+    for (p of Object.keys(t).sort()) {
+        var [ r, f ] = t[p], r = await l(n, i, r, f);
+        if (!r) return void i.close();
+        o.iterPMBuffer(r, (a, s) => e[a] = s);
+    }
+    return i.close(), !0;
+}
+
+async function M(a, s) {
+    var o, a = a.qySnapshots, t = s.posMap, e = s.keyValueMap = {}, p = a.getVLFilePath(s), n = await h(p);
+    for (o of Object.keys(t).sort()) {
+        var [ i, r ] = t[o];
+        if (0 < r) {
+            i = await l(p, n, i, r);
+            if (!i) return void n.close();
+            e[o] = i;
+        } else e[o] = void 0;
+    }
+    return n.close(), !0;
+}
+
+export default s;

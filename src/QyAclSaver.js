@@ -1,14 +1,20 @@
-let QyMessager = require("./QyMessager.js").QyMessager, getDefaultOptions = require("./QyDefaultOptions.js").getDefaultOptions;
+import {
+    QyMessager as s
+} from "./QyMessager.js";
 
-class QyAclSaver extends QyMessager {
-    constructor(e, s) {
-        super(e, "QyAclSaver_Worker.js", s = {
-            ...getDefaultOptions("QyAclSaver"),
-            ...s
-        }, s, [ "callSave" ], [ "switch", "castSave" ]);
+import {
+    getDefaultOptions as a
+} from "./QyDefaultOptions.js";
+
+class e extends s {
+    constructor(s, e) {
+        super(s, "QyAclSaver_Worker.js", e = {
+            ...a("QyAclSaver"),
+            ...e
+        }, e, [ "callSave" ], [ "switch", "castSave" ]);
     }
 }
 
-Object.assign(module.exports, {
-    QyAclSaver: QyAclSaver
-});
+export {
+    e as QyAclSaver
+};

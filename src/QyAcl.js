@@ -1,59 +1,67 @@
-let fsPromises = require("node:fs/promises"), {
-    mergeContent,
-    mergeContentChanges,
-    setValByNamePath
-} = require("./QyFileContentUtils.js"), {
-    isEmptyObj,
-    arrayLast
-} = require("./QyUtils.js"), logger = require("./QyLogger.js").logger;
+import u from "node:fs/promises";
 
-function delCmdKey(e, r) {
+import {
+    mergeContent as m,
+    mergeContentChanges as n,
+    setValByNamePath as a
+} from "./QyFileContentUtils.js";
+
+import {
+    isEmptyObj as g,
+    arrayLast as s
+} from "./QyUtils.js";
+
+import {
+    logger as d
+} from "./QyLogger.js";
+
+function r(r, e) {
     var {
-        A: e,
+        A: r,
         R: t,
         M: a,
-        D: n
-    } = e;
-    n && delete n[r], r.startsWith("c") ? a && delete a[r] : (e && delete e[r], 
-    t && delete t[r]);
+        D: s
+    } = r;
+    s && delete s[e], e.startsWith("c") ? a && delete a[e] : (r && delete r[e], 
+    t && delete t[e]);
 }
 
-function applyAclChange(e, r) {
-    var t, a, n, s, {
-        D: r,
+function e(r, e) {
+    var t, a, s, n, {
+        D: e,
         A: i,
         R: o,
-        M: l
-    } = r;
-    for (t in r) null != e[t] && (e[t] = void 0);
+        M: f
+    } = e;
+    for (t in e) null != r[t] && (r[t] = void 0);
     for (a in i) {
-        var f, u = e[a] || (e[a] = {});
-        for (f of i[a]) u[f] = 1;
+        var c, l = r[a] || (r[a] = {});
+        for (c of i[a]) l[c] = 1;
     }
-    for (n in o) {
-        var d = e[n];
-        if (d) {
-            var c = o[n];
-            if (c) {
-                for (var m of c) delete d[m];
-                isEmptyObj(d) && (e[n] = void 0);
+    for (s in o) {
+        var u = r[s];
+        if (u) {
+            var d = o[s];
+            if (d) {
+                for (var h of d) delete u[h];
+                g(u) && (r[s] = void 0);
             }
         }
     }
-    for (s in l) e[s] = mergeContent(e[s], l[s]);
+    for (n in f) r[n] = m(r[n], f[n]);
 }
 
-function iterCmdKeys(e, r) {
+function t(r, e) {
     var t, {
-        D: e,
+        D: r,
         A: a,
-        R: n,
-        M: s
-    } = e;
-    for (t of [ e, a, n, s ]) for (var i in t) r(i);
+        R: s,
+        M: n
+    } = r;
+    for (t of [ r, a, s, n ]) for (var i in t) e(i);
 }
 
-class QyAclCmdGenerator {
+class i {
     constructor() {
         Object.assign(this, {
             cmdArgAsMapObj: {},
@@ -61,192 +69,185 @@ class QyAclCmdGenerator {
             batchSize: 0
         });
     }
-    pushCmd(e, r, t) {
-        switch (++this.cmdCount, e) {
+    pushCmd(r, e, t) {
+        switch (++this.cmdCount, r) {
           case "A":
-            this._setCmdByNamePath([ "A", r, t ]), this._delCmdByNamePath([ "R", r, t ]);
+            o(this, [ "A", e, t ]), f(this, [ "R", e, t ]);
             break;
 
           case "R":
-            this._setCmdByNamePath([ "R", r, t ]), this._delCmdByNamePath([ "A", r, t ]);
+            o(this, [ "R", e, t ]), f(this, [ "A", e, t ]);
             break;
 
           case "D":
-            if (this._setCmdByNamePath([ "D", r ]), r.startsWith("c")) this._delCmdByNamePath([ "M", r ]); else for (var a of [ "A", "R" ]) this._delCmdByNamePath([ a, r ]);
+            if (o(this, [ "D", e ]), e.startsWith("c")) f(this, [ "M", e ]); else for (var a of [ "A", "R" ]) f(this, [ a, e ]);
             break;
 
           case "M":
             {
-                var n = this.cmdArgAsMapObj;
-                let e = n.M;
-                n = (e = null == e ? n.M = {} : e)[r];
-                e[r] = null != n ? mergeContentChanges(n, t) : t;
+                var s = this.cmdArgAsMapObj;
+                let r = s.M;
+                s = (r = null == r ? s.M = {} : r)[e];
+                r[e] = null != s ? n(s, t) : t;
                 break;
             }
 
           default:
-            logger.error(`unsupported cmdName:${e}, called with ${r} ` + t), --this.cmdCount;
+            d.error(`unsupported cmdName:${r}, called with ${e} ` + t), --this.cmdCount;
         }
     }
-    pushCmdArgAsListObj(e) {
-        if (e) {
+    pushCmdArgAsListObj(r) {
+        if (r) {
             ++this.batchSize;
-            var r, t, a, {
-                D: n,
-                M: s
-            } = e;
-            for (r in n) this.pushCmd("D", r);
+            var e, t, a, {
+                D: s,
+                M: n
+            } = r;
+            for (e in s) this.pushCmd("D", e);
             for (t of [ "A", "R" ]) {
-                var i, o = e[t];
-                for (i in o) for (var l of o[i]) this.pushCmd(t, i, l);
+                var i, o = r[t];
+                for (i in o) for (var f of o[i]) this.pushCmd(t, i, f);
             }
-            for (a in s) this.pushCmd("M", a, s[a]);
+            for (a in n) this.pushCmd("M", a, n[a]);
         }
         return this;
     }
     takeCmdArgAsListObj() {
-        var e, r = this.cmdArgAsMapObj;
+        var r, e = this.cmdArgAsMapObj;
         Object.assign(this, {
             cmdArgAsMapObj: {},
             cmdCount: 0,
             batchSize: 0
         });
-        for (e of [ "A", "R" ]) {
-            var t, a = r[e];
+        for (r of [ "A", "R" ]) {
+            var t, a = e[r];
             for (t in a) {
-                var n = Object.keys(a[t]);
-                0 < n.length ? a[t] = n : delete a[t];
+                var s = Object.keys(a[t]);
+                0 < s.length ? a[t] = s : delete a[t];
             }
-            isEmptyObj(a) && delete r[e];
+            g(a) && delete e[r];
         }
         var {
-            D: s,
+            D: n,
             M: i
-        } = r;
-        return s && isEmptyObj(s) && delete r.D, i && isEmptyObj(i) && delete r.M, 
-        r;
+        } = e;
+        return n && g(n) && delete e.D, i && g(i) && delete e.M, e;
     }
-    toAclBuffer(e) {
-        var r = this.batchSize;
-        if (0 < r) return _toAclBuffer(e, r, this.takeCmdArgAsListObj());
-    }
-    _setCmdByNamePath(e, r = 1) {
-        setValByNamePath(this.cmdArgAsMapObj, e, r);
-    }
-    _delCmdByNamePath(r) {
-        let t = this.cmdArgAsMapObj;
-        if (t && r && !(r.length <= 1)) {
-            for (let e = 0; e < r.length - 1; ++e) if (null == (t = t[r[e]])) return;
-            delete t[arrayLast(r)];
-        }
+    toAclBuffer(r) {
+        var e, t = this.batchSize;
+        if (0 < t) return r = r, t = t, e = this.takeCmdArgAsListObj(), e = Buffer.from(JSON.stringify(e)), 
+        Buffer.concat([ l([ r, t, e.length ]), e ]);
     }
 }
 
-async function readAclFile(r, e = !1, t = 0) {
+function o(r, e, t = 1) {
+    a(r.cmdArgAsMapObj, e, t);
+}
+
+function f(r, e) {
+    let t = r.cmdArgAsMapObj;
+    if (t && e && !(e.length <= 1)) {
+        for (let r = 0; r < e.length - 1; ++r) if (null == (t = t[e[r]])) return;
+        delete t[s(e)];
+    }
+}
+
+async function c(e, r = !1, t = 0) {
     try {
-        return await readAclBuffer(r, await fsPromises.readFile(r), e, t);
-    } catch (e) {
-        throw logger.error(`Reading ${r} failed:`, e), e;
+        return await v(e, await u.readFile(e), r, t);
+    } catch (r) {
+        throw d.error(`Reading ${e} failed:`, r), r;
     }
 }
 
-let ByteCountList = [ 1, 2, 4, 8 ];
+let A = [ 1, 2, 4, 8 ];
 
-function numsToBuffer(r) {
-    var t = r.length, a = new Array(t), n = new Array(t);
-    let s = t << 6, i = 1;
-    for (let e = 0; e < t; ++e) {
-        var o = a[e] = _getByteCountType(r[e]), o = (s |= o << (e << 1), n[e] = ByteCountList[o]);
+function l(e) {
+    var t = e.length, a = new Array(t), s = new Array(t);
+    let n = t << 6, i = 1;
+    for (let r = 0; r < t; ++r) {
+        var o = a[r] = (o = e[r]) <= 255 ? 0 : o <= 65535 ? 1 : o <= 4294967295 ? 2 : 3, o = (n |= o << (r << 1), 
+        s[r] = A[o]);
         i += o;
     }
-    var l = Buffer.allocUnsafe(i);
-    l.writeUInt8(s);
-    let f = 1;
-    for (let e = 0; e < t; ++e) _writeNum(l, r[e], n[e], f), f += n[e];
-    return l;
+    var f = Buffer.allocUnsafe(i);
+    f.writeUInt8(n);
+    let c = 1;
+    for (let r = 0; r < t; ++r) {
+        h = d = u = l = void 0;
+        var [ l, u, d, h = 0 ] = [ f, e[r], s[r], c ];
+        switch (d) {
+          case 1:
+            l.writeUInt8(u, h);
+            break;
+
+          case 2:
+            l.writeUInt16BE(u, h);
+            break;
+
+          case 4:
+            l.writeUInt32BE(u, h);
+            break;
+
+          default:
+            l.writeBigUInt64BE(BigInt(u), h);
+        }
+        c += s[r];
+    }
+    return f;
 }
 
-function bufferToNums(r, t, a) {
-    var n = r.readUInt8(t), s = (++t, n >> 6 & 3);
-    for (let e = 0; e < s; ++e) {
-        var i = ByteCountList[n >> (e << 1) & 3];
-        a[e] = _readNum(r, i, t), t += i;
+function h(e, t, a) {
+    var s = e.readUInt8(t), n = (++t, s >> 6 & 3);
+    for (let r = 0; r < n; ++r) {
+        var i = A[s >> (r << 1) & 3];
+        a[r] = ((r, e, t = 0) => {
+            switch (e) {
+              case 1:
+                return r.readUInt8(t);
+
+              case 2:
+                return r.readUInt16BE(t);
+
+              case 4:
+                return r.readUInt32BE(t);
+
+              default:
+                return Number(r.readBigUInt64BE(t));
+            }
+        })(e, i, t), t += i;
     }
     return t;
 }
 
-function _toAclBuffer(e, r, t) {
-    t = Buffer.from(JSON.stringify(t) + "\n");
-    return Buffer.concat([ numsToBuffer([ e, r, t.length ]), t ]);
-}
-
-async function readAclBuffer(t, e, a, n) {
-    var s = [];
-    for (let r = 0; r < e.length; ) {
-        var i = [], o = bufferToNums(e, r, i), [ i, l, f ] = i;
-        if (i <= n) logger.warn(`changeId ${i} <= currentChangeId ${n} at ${t}:${r}. Ignored.`), 
-        r = o + f; else {
-            n + l != i && logger.warn(`currentChangeId ${n} + batchSize ${l} != changeId ` + i);
+async function v(t, r, a, s) {
+    var n = [];
+    for (let e = 0; e < r.length; ) {
+        var i = [], o = h(r, e, i), [ i, f, c ] = i;
+        if (i <= s) d.warn(`changeId ${i} <= currentChangeId ${s} at ${t}:${e}. Ignored.`), 
+        e = o + c; else {
+            s + f != i && d.warn(`currentChangeId ${s} + batchSize ${f} != changeId ` + i);
             try {
-                var u = JSON.parse(e.subarray(o, o + f));
-                s.push([ i, u ]), n = i, r = o + f;
-            } catch (e) {
-                if (logger.error(`Parse ${t} failed at ${r}:`, e), a) return logger.warn(`Autorepair by truncating ${t} to ` + r), 
-                null == (l = await fsPromises.truncate(t, r)) ? logger.log("truncate success") : logger.error("truncate failed:", l), 
-                s;
-                throw e;
+                var l = JSON.parse(r.subarray(o, o + c));
+                n.push([ i, l ]), s = i, e = o + c;
+            } catch (r) {
+                if (d.error(`Parse ${t} failed at ${e}:`, r), a) return d.warn(`Autorepair by truncating ${t} to ` + e), 
+                null == (f = await u.truncate(t, e)) ? d.log("truncate success") : d.error("truncate failed:", f), 
+                n;
+                throw r;
             }
         }
     }
-    return s;
+    return n;
 }
 
-function _writeNum(e, r, t, a = 0) {
-    switch (t) {
-      case 1:
-        e.writeUInt8(r, a);
-        break;
-
-      case 2:
-        e.writeUInt16BE(r, a);
-        break;
-
-      case 4:
-        e.writeUInt32BE(r, a);
-        break;
-
-      default:
-        e.writeBigUInt64BE(BigInt(r), a);
-    }
-}
-
-function _readNum(e, r, t = 0) {
-    switch (r) {
-      case 1:
-        return e.readUInt8(t);
-
-      case 2:
-        return e.readUInt16BE(t);
-
-      case 4:
-        return e.readUInt32BE(t);
-
-      default:
-        return Number(e.readBigUInt64BE(t));
-    }
-}
-
-function _getByteCountType(e) {
-    return e <= 255 ? 0 : e <= 65535 ? 1 : e <= 4294967295 ? 2 : 3;
-}
-
-Object.assign(module.exports, {
-    QyAclCmdGenerator: QyAclCmdGenerator,
-    applyAclChange: applyAclChange,
-    iterCmdKeys: iterCmdKeys,
-    readAclFile: readAclFile,
-    readAclBuffer: readAclBuffer,
-    numsToBuffer: numsToBuffer,
-    bufferToNums: bufferToNums,
-    delCmdKey: delCmdKey
-});
+export {
+    i as QyAclCmdGenerator,
+    e as applyAclChange,
+    t as iterCmdKeys,
+    c as readAclFile,
+    v as readAclBuffer,
+    l as numsToBuffer,
+    h as bufferToNums,
+    r as delCmdKey
+};

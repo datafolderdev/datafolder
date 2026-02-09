@@ -1,16 +1,30 @@
-let open = require("node:fs/promises").open, QyOpRunner = require("./QyOpRunner.js").QyOpRunner, {
-    ensureParentDir,
-    getSize,
-    getSizeStr,
-    sleep,
-    setPromise,
-    toBuffer
-} = require("./QyUtils.js"), getDefaultOptions = require("./QyDefaultOptions.js").getDefaultOptions;
+import {
+    open as s
+} from "node:fs/promises";
 
-class QyBinWriter extends QyOpRunner {
+import {
+    QyOpRunner as e
+} from "./QyOpRunner.js";
+
+import {
+    ensureParentDir as r,
+    getSize as n,
+    getSizeStr as d,
+    sleep as _,
+    setPromise as o,
+    toBuffer as v
+} from "./QyUtils.js";
+
+import {
+    getDefaultOptions as a
+} from "./QyDefaultOptions.js";
+
+let l = Array.isArray;
+
+class t extends e {
     constructor(e, t) {
         super({
-            ...getDefaultOptions("QyBinWriter"),
+            ...a("QyBinWriter"),
             ...e
         }, [ "start", "stop" ]), this.filePath = t, this._resetParams();
     }
@@ -20,14 +34,14 @@ class QyBinWriter extends QyOpRunner {
     getTotalSavedSize() {
         return this.totalSavedSize;
     }
-    save(e, t, i) {
+    save(e, t, a) {
         null == t && (t = e, e = 0);
-        var a, r = this.lastOp;
-        return "_op_save" === r?.opFunName ? (a = r.args, a[0] = e, a[1].push(t), 
-        i && setPromise(r), r.promise) : (a = {
+        var i, s = this.lastOp;
+        return "_op_save" === s?.opFunName ? (i = s.args, i[0] = e, i = i[1], l(t) ? i.push(...t) : i.push(t), 
+        a && o(s), s.promise) : (i = {
             opFunName: "_op_save",
-            args: [ e, [ t ] ]
-        }, i ? this.pushAndRunWithPromise(a) : this.pushAndRun(a));
+            args: [ e, l(t) ? t : [ t ] ]
+        }, a ? this.pushAndRunWithPromise(i) : this.pushAndRun(i));
     }
     truncate() {
         var e = this.lastOp;
@@ -51,28 +65,28 @@ class QyBinWriter extends QyOpRunner {
     }
     async _saveBinData(e, t) {
         var {
-            fileHandle: i,
-            totalSavedSize: a,
-            filePath: r,
-            options: s
+            fileHandle: a,
+            totalSavedSize: i,
+            filePath: s,
+            options: r
         } = this, {
             emitSaveEvent: n,
             maxFileSize: o,
             maxRetryInterval: l,
             retryIntervalFactor: h
-        } = s, u = toBuffer(t), p = u.length, f = `size ${getSizeStr(p)} (MaxId:${e}) to ` + r;
-        let c;
+        } = r, p = v(t), u = p.length, f = `size ${d(u)} (MaxId:${e}) to ` + s;
+        let m;
         for (;"_op_truncate" !== this.firstOp?.opFunName; ) try {
-            await i.appendFile(u, {
+            await a.appendFile(p, {
                 flush: !0
             });
-            var d = this.totalSavedSize = a + p;
-            return n && this.emit("save", e), void (o && o < d && !this.maxFileSizeEmitted && (this.supressMaxFileSizeEvent(), 
-            this.emit("maxFileSize", d)));
+            var c = this.totalSavedSize = i + u;
+            return n && this.emit("save", e), void (o && o < c && !this.maxFileSizeEmitted && (this.supressMaxFileSizeEvent(), 
+            this.emit("maxFileSize", c)));
         } catch (e) {
-            logger.error(`Saving ${f} failed:`, e, "Truncated back to " + a), await i.truncate(a), 
-            c = c ? Math.min(l, c * h) : 1, logger.log(`Retry in ${c} seconds`), 
-            await sleep(c);
+            logger.error(`Saving ${f} failed:`, e, "Truncated back to " + i), await a.truncate(i), 
+            m = m ? Math.min(l, m * h) : 1, logger.log(`Retry in ${m} seconds`), 
+            await _(m);
         }
     }
     async _op_start(e) {
@@ -109,20 +123,20 @@ class QyBinWriter extends QyOpRunner {
     async _op_switch(e) {
         var {
             fileHandle: t,
-            filePath: i
+            filePath: a
         } = this;
-        t && i == e || (await this._openFile(e), logger.info(`Switched from ${i} to ` + e));
+        t && a == e || (await this._openFile(e), logger.info(`Switched from ${a} to ` + e));
     }
     async _openFile(t) {
         var {
             fileHandle: e,
-            options: i
+            options: a
         } = this;
         this._resetParams();
         try {
-            e && (e.close(), this.fileHandle = void 0), await ensureParentDir(t);
-            var a = i.append;
-            this.fileHandle = await open(t, a ? "a" : "w"), this.filePath = t, a && (this.totalSavedSize = await getSize(t));
+            e && (e.close(), this.fileHandle = void 0), await r(t);
+            var i = a.append;
+            this.fileHandle = await s(t, i ? "a" : "w"), this.filePath = t, i && (this.totalSavedSize = await n(t));
         } catch (e) {
             logger.error(`Open ${t} failed:`, e);
         }
@@ -135,6 +149,6 @@ class QyBinWriter extends QyOpRunner {
     }
 }
 
-Object.assign(module.exports, {
-    QyBinWriter: QyBinWriter
-});
+export {
+    t as QyBinWriter
+};

@@ -1,27 +1,26 @@
-let {
-    isString,
-    pathSplit
-} = require("./QyUtils.js");
+import {
+    isString as e,
+    pathSplit as s
+} from "./QyUtils.js";
 
-class QyCD {
+class r {
     constructor(r) {
         this.qyCache = r;
     }
     cd(r, i = this.currentDir) {
-        return isString(r) && (r = pathSplit(r)), this.cdP(r, i);
+        return e(r) && (r = s(r)), this.cdP(r, i);
     }
     cdP(r, i = this.currentDir) {
         return this.currentDir = this.qyCache.getOrCreateDir(r, i), this;
     }
     dir(r, i = this.currentDir) {
-        return isString(r) && (r = pathSplit(r)), this.dirP(r, i);
+        return e(r) && (r = s(r)), this.dirP(r, i);
     }
     dirP(r, i = this.currentDir) {
         return this.qyCache.getDir(r, i);
     }
     indexDir(r, i, t = this.currentDir) {
-        return isString(r) && (r = pathSplit(r)), isString(i) && (i = pathSplit(i)), 
-        this.indexDirP(r, i, t);
+        return e(r) && (r = s(r)), e(i) && (i = s(i)), this.indexDirP(r, i, t);
     }
     indexDirP(r, i, t = this.currentDir) {
         var e = this.qyCache, r = e.getDir(r, t);
@@ -31,7 +30,7 @@ class QyCD {
         }
     }
     file(r, i = this.currentDir) {
-        return isString(r) && (r = pathSplit(r)), this.fileP(r, i);
+        return e(r) && (r = s(r)), this.fileP(r, i);
     }
     fileP(r, i = this.currentDir) {
         return this.qyCache.getFile(r, i);
@@ -40,7 +39,7 @@ class QyCD {
         return this.qyCache.getTriggerFile(r);
     }
     view(r, i, t = this.currentDir) {
-        return isString(r) && (r = pathSplit(r)), this.viewP(r, i, t);
+        return e(r) && (r = s(r)), this.viewP(r, i, t);
     }
     viewP(r, i, t = this.currentDir) {
         return this.qyCache.getFile(r, t)?.view(i);
@@ -56,6 +55,6 @@ class QyCD {
     }
 }
 
-Object.assign(module.exports, {
-    QyCD: QyCD
-});
+export {
+    r as QyCD
+};

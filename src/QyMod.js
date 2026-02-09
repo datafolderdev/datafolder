@@ -1,15 +1,19 @@
-let Module = require("node:module"), logger = require("./QyLogger.js").logger;
+import m from "node:module";
 
-function requireFromModCode(o, r, d, e) {
-    if (d) try {
-        var l = o + "_" + r, i = `_${l}_qydb`, u = (globalThis[i] = e, new Module(r));
-        return u._compile(`(function(qyDB){${d}})(${i});`, l + ".js"), delete globalThis[i], 
-        u.exports;
-    } catch (e) {
-        logger.error("requireFromModCode failed:", o, r, d, e);
+import {
+    logger as a
+} from "./QyLogger.js";
+
+function o(r, e, i, o) {
+    if (i) try {
+        var t = r + "_" + e, d = `_${t}_qydb`, l = (globalThis[d] = o, new m(e));
+        return l._compile(`(function(qyDB){${i}})(${d});`, t + ".js"), delete globalThis[d], 
+        l.exports;
+    } catch (o) {
+        a.error("requireFromModCode failed:", r, e, i, o);
     }
 }
 
-Object.assign(module.exports, {
-    requireFromModCode: requireFromModCode
-});
+export {
+    o as requireFromModCode
+};

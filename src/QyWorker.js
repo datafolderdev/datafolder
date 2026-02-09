@@ -1,33 +1,47 @@
-let path = require("node:path"), {
-    Worker,
-    setEnvironmentData
-} = require("node:worker_threads"), logger = require("./QyLogger.js").logger, setPromise = require("./QyUtils.js").setPromise;
+import {
+    isAbsolute as a,
+    join as m
+} from "node:path";
 
-function runOnceWithWorker(e, r) {
-    setEnvironmentData("logLevel", logger.level);
+import {
+    Worker as l,
+    setEnvironmentData as p
+} from "node:worker_threads";
+
+import {
+    logger as g
+} from "./QyLogger.js";
+
+import {
+    setPromise as k,
+    __dirname as d
+} from "./QyUtils.js";
+
+function e(e, r) {
+    p("logLevel", g.level);
     var o = r.operation;
     let t = e + " " + o, {
-        promise: i,
-        resolve: n
-    } = (logger.info("Starting worker " + t), setPromise({}));
-    path.isAbsolute(e) || (e = path.join(__dirname, e));
-    o = new Worker(e, {
+        promise: s,
+        resolve: i
+    } = (g.info("Starting worker " + t), k({}));
+    a(e) || (e = m(d, e));
+    o = new l(e, {
         workerData: r
     });
-    let s;
+    let n;
     return o.on("message", e => {
-        s = !0, n(e);
+        n = !0, i(e);
     }), o.on("error", e => {
-        s = !0, n(e);
+        n = !0, i(e);
     }), o.on("exit", e => {
-        s ? logger.info(`Worker ${t} exited.`) : (logger.log(`Worker ${t} stopped with exitCode ` + e), 
-        n());
+        n ? g.info(`Worker ${t} exited.`) : (g.log(`Worker ${t} stopped with exitCode ` + e), 
+        i());
     }), {
         worker: o,
-        promise: i
+        promise: s
     };
 }
 
-Object.assign(module.exports, {
-    runOnceWithWorker: runOnceWithWorker
-});
+export {
+    e as runOnceWithWorker
+};

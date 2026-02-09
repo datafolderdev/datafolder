@@ -1,26 +1,76 @@
-let path = require("node:path"), {
-    Worker,
-    setEnvironmentData
-} = require("node:worker_threads"), getDefaultOptions = require("./QyDefaultOptions.js").getDefaultOptions, logger = require("./QyLogger.js").logger, setPromise = require("./QyUtils.js").setPromise, QyQueue = require("./QyQueue.js").QyQueue;
+import {
+    join as s
+} from "node:path";
 
-class QyMessager {
-    constructor(e, r, t, s, o = [], i = []) {
-        s = {
-            ...getDefaultOptions("QyMessager"),
-            ...s
+import {
+    Worker as p,
+    setEnvironmentData as t
+} from "node:worker_threads";
+
+import {
+    getDefaultOptions as i
+} from "./QyDefaultOptions.js";
+
+import {
+    logger as n
+} from "./QyLogger.js";
+
+import {
+    setPromise as l,
+    __dirname as m
+} from "./QyUtils.js";
+
+import {
+    QyQueue as h
+} from "./QyQueue.js";
+
+class e {
+    constructor(e, r, s, t, o = [], a = []) {
+        t = {
+            ...i("QyMessager"),
+            ...t
         }, Object.assign(this, {
             parent: e,
             workerTypeFileName: r,
-            initArgMap: t,
-            options: s,
+            initArgMap: s,
+            options: t,
             receiverQueueMap: {}
         });
         for (let r of o) this[r] || (this[r] = (...e) => this.callWorker(r, e));
-        for (let r of i) this[r] || (this[r] = (...e) => this.castWorker(r, e));
+        for (let r of a) this[r] || (this[r] = (...e) => this.castWorker(r, e));
     }
     start(...e) {
-        return this.started = !0, setEnvironmentData("logLevel", logger.level), 
-        this._startWorker(), this.callWorker("start", e);
+        this.started = !0, t("logLevel", n.level);
+        var i = this;
+        if (!i.worker) {
+            let {
+                workerTypeFileName: t,
+                initArgMap: e,
+                receiverQueueMap: o
+            } = i;
+            var r = {
+                workerTypeFileName: t,
+                initArgMap: e
+            };
+            let a = i.worker = new p(s(m, "QyMessager_Run.js"), {
+                workerData: r
+            });
+            a.on("error", e => {
+                n.error(`Worker ${t} error:`, e);
+            }), a.on("message", e => {
+                var {
+                    opName: r,
+                    ack: s,
+                    result: t
+                } = e;
+                r ? (e = e.args || [], (i.parent || i)[r](...e)) : o[s]?.shift().resolve(t);
+            }), a.on("exit", e => {
+                for (var r in a.removeAllListeners(), 0 != e ? n.warn(`Worker ${t} stopped with exitCode ` + e) : n.info(`Worker ${t} stopped.`), 
+                o) for (var s = o[r]; !s.isEmpty; ) s.shift()?.resolve();
+                i.worker = void 0;
+            });
+        }
+        return this.callWorker("start", e);
     }
     stop(...e) {
         if (this.started) return this.started = !1, this.callWorker("stop", e);
@@ -34,51 +84,21 @@ class QyMessager {
     }
     callWorker(e, r) {
         var {
-            worker: t,
-            receiverQueueMap: s,
+            worker: s,
+            receiverQueueMap: t,
             options: o
         } = this;
-        t.postMessage({
+        s.postMessage({
             opName: e,
             args: r
         });
-        let i = s[e];
-        i = i || (s[e] = new QyQueue(o));
-        t = setPromise({});
-        return i.push(t), t.promise;
-    }
-    _startWorker() {
-        if (!this.worker) {
-            let {
-                workerTypeFileName: s,
-                initArgMap: e,
-                receiverQueueMap: o
-            } = this;
-            var r = {
-                workerTypeFileName: s,
-                initArgMap: e
-            };
-            let i = this.worker = new Worker(path.join(__dirname, "QyMessager_Run.js"), {
-                workerData: r
-            });
-            i.on("error", e => {
-                logger.error(`Worker ${s} error:`, e);
-            }), i.on("message", e => {
-                var {
-                    opName: r,
-                    ack: t,
-                    result: s
-                } = e;
-                r ? (e = e.args || [], (this.parent || this)[r](...e)) : o[t]?.shift().resolve(s);
-            }), i.on("exit", e => {
-                for (var r in i.removeAllListeners(), 0 != e ? logger.warn(`Worker ${s} stopped with exitCode ` + e) : logger.info(`Worker ${s} stopped.`), 
-                o) for (var t = o[r]; !t.isEmpty; ) t.shift()?.resolve();
-                this.worker = void 0;
-            });
-        }
+        let a = t[e];
+        a = a || (t[e] = new h(o));
+        s = l({});
+        return a.push(s), s.promise;
     }
 }
 
-Object.assign(module.exports, {
-    QyMessager: QyMessager
-});
+export {
+    e as QyMessager
+};

@@ -1,4 +1,4 @@
-const DataFolder = require("datafolder");
+import DataFolder from "datafolder";
 const dataFolder = new DataFolder();
 
 run();

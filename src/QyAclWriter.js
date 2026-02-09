@@ -1,19 +1,29 @@
-let QyBinWriter = require("./QyBinWriter.js").QyBinWriter, QyAclCmdGenerator = require("./QyAcl.js").QyAclCmdGenerator, getDefaultOptions = require("./QyDefaultOptions.js").getDefaultOptions;
+import {
+    QyBinWriter as r
+} from "./QyBinWriter.js";
 
-class QyAclWriter extends QyBinWriter {
-    constructor(e, r) {
+import {
+    QyAclCmdGenerator as e
+} from "./QyAcl.js";
+
+import {
+    getDefaultOptions as s
+} from "./QyDefaultOptions.js";
+
+class t extends r {
+    constructor(r, t) {
         super({
-            ...getDefaultOptions("QyAclWriter"),
-            ...e
-        }, r), this.qyAclCmdGenerator = new QyAclCmdGenerator();
+            ...s("QyAclWriter"),
+            ...r
+        }, t), this.qyAclCmdGenerator = new e();
     }
-    _getBinData(e, r) {
-        var t, i = this.qyAclCmdGenerator;
-        for (t of e) i.pushCmdArgAsListObj(t);
-        return i.toAclBuffer(r);
+    _getBinData(r, t) {
+        var e, s = this.qyAclCmdGenerator;
+        for (e of r) s.pushCmdArgAsListObj(e);
+        return s.toAclBuffer(t);
     }
 }
 
-Object.assign(module.exports, {
-    QyAclWriter: QyAclWriter
-});
+export {
+    t as QyAclWriter
+};

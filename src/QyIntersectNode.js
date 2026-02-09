@@ -1,48 +1,51 @@
-let QyQueryNode = require("./QyUnionNode.js").QyQueryNode;
+import {
+    QyQueryNode as t
+} from "./QyUnionNode.js";
 
-class QyIntersectNode extends QyQueryNode {
+class i extends t {
     constructor() {
         super(), Object.assign(this, {
             fileCount: void 0
         });
     }
-    containsFile(e) {
+    containsFile(t) {
         var {
-            nodeList: t,
+            nodeList: e,
             fileCount: n
         } = this;
-        if (0 != t.length && 0 != n) return this._ensureSorted(), t[0].containsFile(e) && this._inAllOthers(e);
+        if (0 != e.length && 0 != n) return s(this), e[0].containsFile(t) && l(e, t);
     }
-    getFileMap(e) {
+    *getFiles(t, e = {}) {
         var {
-            nodeList: t,
-            fileCount: n
+            nodeList: n,
+            fileCount: i
         } = this;
-        if (0 == t.length || 0 == n) return {};
-        this._ensureSorted();
-        var i, s = {};
-        for (i in t[0].getFileMap()) if (!s[i] && this._inAllOthers(i) && this.encounterOne(s, i, e)) return s;
-        return s;
+        if (0 != n.length && 0 != i) {
+            s(this);
+            for (var o of n[0].getFiles()) if (!(o in e) && l(n, o) && this.encounterOne(e, o, t) && (yield o, 
+            t?.isFull)) return;
+        }
     }
-    addNode(e) {
-        var t, n;
-        e && null != e.fileCount && ({
-            fileCount: t,
+    addNode(t) {
+        var e, n;
+        t && null != t.fileCount && ({
+            fileCount: e,
             nodeList: n
-        } = this, 0 < n.length && 0 == t || (e instanceof QyIntersectNode ? (n.push(...e.nodeList), 
-        this.sorted = !1) : n.push(e), (null == t || t > e.fileCount) && (this.fileCount = e.fileCount)));
-    }
-    _ensureSorted() {
-        this.sorted || (this.nodeList.sort((e, t) => e.fileCount - t.fileCount), 
-        this.sorted = !0);
-    }
-    _inAllOthers(t) {
-        var n = this.nodeList;
-        for (let e = 1; e < n.length; ++e) if (!n[e].containsFile(t)) return !1;
-        return !0;
+        } = this, 0 < n.length && 0 == e || (t instanceof i ? (n.push(...t.nodeList), 
+        this.sorted = !1) : n.push(t), (null == e || e > t.fileCount) && (this.fileCount = t.fileCount)));
     }
 }
 
-Object.assign(module.exports, {
-    QyIntersectNode: QyIntersectNode
-});
+function s(t) {
+    t.sorted || (t.nodeList.sort((t, e) => t.fileCount - e.fileCount), t.sorted = !0);
+}
+
+function l(e, n) {
+    var i = e.length;
+    for (let t = 1; t < i; ++t) if (!e[t].containsFile(n)) return !1;
+    return !0;
+}
+
+export {
+    i as QyIntersectNode
+};
