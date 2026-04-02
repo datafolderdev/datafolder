@@ -7,16 +7,15 @@ import {
 } from "./QyDefaultOptions.js";
 
 class s {
+    options;
+    queue = [];
+    firstIdx = 0;
+    _waterMark = 0;
     constructor(t) {
-        t = {
+        this.options = {
             ...e("QyQueue"),
             ...t
-        }, Object.assign(this, {
-            options: t,
-            queue: [],
-            firstIdx: 0,
-            _waterMark: 0
-        });
+        };
     }
     get first() {
         return this.queue[this.firstIdx];

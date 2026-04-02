@@ -1,26 +1,32 @@
+var t = this && this.__rewriteRelativeImportExtension || function(e, i) {
+    return "string" == typeof e && /^\.\.?\//.test(e) ? e.replace(/\.(tsx)$|((?:\.d)?)((?:\.[^./]+?)?)\.([cm]?)ts$/i, function(e, r, t, o, a) {
+        return r ? i ? ".jsx" : ".js" : !t || o && a ? t + o + "." + a.toLowerCase() + "js" : e;
+    }) : e;
+};
+
 import {
-    resolve as a,
     join as o
 } from "node:path";
 
 import {
-    getEnvironmentData as t,
+    getEnvironmentData as a,
     workerData as i
 } from "node:worker_threads";
 
 import {
-    logger as m
+    logger as s,
+    ThreadMark as n
 } from "./QyLogger.js";
 
 import {
-    __dirname as s
+    __dirname as m
 } from "./QyUtils.js";
 
 (async () => {
-    m.level = t("logLevel");
+    s.level = a("logLevel");
     var {
         workerTypeFileName: e,
         initArgMap: r
     } = i;
-    new (await import("file://" + a(o(s, e)))).default(r);
+    new (await import(t("file://" + o(m, e)))).default(r), s.log("" + n + e);
 })();

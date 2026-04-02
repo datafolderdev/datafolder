@@ -14,8 +14,8 @@ import {
 
 a.level = r("logLevel"), (async () => {
     try {
-        await s(o), e.postMessage(!0);
+        await s(o), e?.postMessage(!0);
     } catch (r) {
-        e.postMessage(r);
+        e?.postMessage(r);
     }
 })();

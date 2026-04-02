@@ -1,5 +1,5 @@
 import {
-    getDefaultOptions as s
+    getDefaultOptions as r
 } from "./QyDefaultOptions.js";
 
 import {
@@ -7,30 +7,29 @@ import {
 } from "./QyMessageWorker.js";
 
 import {
-    QyBinWriter as r
+    QyBinWriter as s
 } from "./QyBinWriter.js";
 
-class i extends t {
+export default class extends t {
+    qyBinWriter;
     constructor(t) {
         super(t = {
-            ...s("QyLogFileSaver_Worker"),
+            ...r("QyLogFileSaver_Worker"),
             ...t
         }), Object.assign(this, {
-            qyBinWriter: new r(t)
+            qyBinWriter: new s(t)
         });
     }
-    async start(t) {
+    async _op_start(t) {
         await this.qyBinWriter.start(t);
     }
-    async stop() {
+    async _op_stop() {
         await this.qyBinWriter.stop();
     }
     async switch(t) {
         await this.qyBinWriter.switch(t);
     }
-    save(t, s) {
-        this.qyBinWriter.save(t, s);
+    save(t, r) {
+        this.qyBinWriter.save(t, r);
     }
 }
-
-export default i;

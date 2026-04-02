@@ -6,26 +6,26 @@ import {
     getSubdirMapKey as i,
     getFileMapKey as t,
     SpecialFilePaths as r,
-    arrayLast as s
+    arrayLast as s,
+    isString as d
 } from "./QyUtils.js";
 
 import {
     QyFile as a
 } from "./QyFile.js";
 
-let d = r.HiddenFolderName;
+let u = r.HiddenFolderName;
 
-class u extends e {
-    constructor(e, i, t, r) {
-        super(e, i, t), r && (this._qyCache = r), Object.assign(this, {
-            _subdirCount: 0,
-            _fileCount: 0,
-            subdirMapChangeCount: 0,
-            fileMapChangeCount: 0,
-            dChangeId: 0,
-            fChangeId: 0,
-            cache: {}
-        }), t && i && (++t._subdirCount, ++t.subdirMapChangeCount);
+class h extends e {
+    _subdirCount = 0;
+    _fileCount = 0;
+    subdirMapChangeCount = 0;
+    fileMapChangeCount = 0;
+    dChangeId = 0;
+    fChangeId = 0;
+    cache = {};
+    constructor(e, i = !1, t = void 0, r = void 0) {
+        super(e, i, t), r && (this._qyCache = r), t && i && (++t._subdirCount, ++t.subdirMapChangeCount);
     }
     get created() {
         return this._created;
@@ -36,10 +36,10 @@ class u extends e {
         ++i.subdirMapChangeCount);
     }
     get fileCount() {
-        return n(this), this._fileCount;
+        return o(this), this._fileCount;
     }
     get subdirCount() {
-        return l(this), this._subdirCount;
+        return n(this), this._subdirCount;
     }
     get isDir() {
         return !0;
@@ -48,7 +48,7 @@ class u extends e {
         return 0 == this.fileCount && 0 == this.subdirCount;
     }
     get isHiddenFolder() {
-        return this.name == d;
+        return this.name == u;
     }
     get subdirMapKey() {
         return this._subdirMapKey || (this._subdirMapKey = i(this.fullPathHash));
@@ -57,14 +57,14 @@ class u extends e {
         return this._fileMapKey || (this._fileMapKey = t(this.fullPathHash));
     }
     get subdirMap() {
-        return l(this), this._subdirMap;
+        return n(this), this._subdirMap;
     }
     get fileMap() {
-        return n(this), this._fileMap;
+        return o(this), this._fileMap;
     }
     getSubdir(e) {
         var i;
-        if (this.created) return "." === e ? this : ".." === e ? this.parentDir || this : "/" === e ? this.qyCache.rootDir : (i = this.subdirMap, 
+        if (this.created) return "." === e ? this : ".." === e ? this.parentDir || this : "/" === e ? this.qyCache?.rootDir : (i = this.subdirMap, 
         (i = i && i[e])?.created ? i : void 0);
     }
     getFile(e) {
@@ -74,16 +74,16 @@ class u extends e {
         } = this, i = i && t && t[e];
         return i?.created ? i : void 0;
     }
-    getOrCreateSubdir(e, i) {
+    getOrCreateSubdir(e, i = !1) {
         if ("." === e) return this;
         if (".." === e) return this.parentDir || this;
-        if ("/" === e) return this.qyCache.rootDir;
+        if ("/" === e) return this.qyCache?.rootDir || this;
         let t = this.subdirMap;
         var r = (t = t || (this._subdirMap = {}))[e];
-        return r || (r = t[e] = new u(e, i, this), this.setChildTriggerNodes(r)), 
+        return r || (r = t[e] = new h(e, i, this), this.setChildTriggerNodes(r)), 
         r;
     }
-    getOrCreateFile(e, i) {
+    getOrCreateFile(e, i = !1) {
         let t = this.fileMap;
         var r = (t = t || (this._fileMap = {}))[e];
         return r || (r = t[e] = new a(e, i, this), this.setChildTriggerNodes(r)), 
@@ -97,7 +97,7 @@ class u extends e {
         }
         return r;
     }
-    searchOrCreateSubdir(i, t, r = i.length) {
+    searchOrCreateSubdir(i, t = !1, r = i.length) {
         let s = this;
         for (let e = 0; e < r; ++e) {
             var a = i[e];
@@ -109,32 +109,32 @@ class u extends e {
         var i = this.searchSubdir(e, e.length - 1);
         if (i) return i.getFile(s(e));
     }
-    searchOrCreateFile(e, i) {
-        return this.searchOrCreateSubdir(e, i, e.length - 1).getOrCreateFile(s(e));
+    searchOrCreateFile(e, i = !1) {
+        return this.searchOrCreateSubdir(e, i, e.length - 1).getOrCreateFile(s(e), i);
     }
     get subdirList() {
-        return h(this, "_subdirList", this.subdirMapChangeCount, () => this.created && this.subdirMap ? Object.values(this.subdirMap).filter(e => e.created) : []);
+        return l(this, "_subdirList", this.subdirMapChangeCount, () => this.created && this.subdirMap ? Object.values(this.subdirMap).filter(e => e.created) : []);
     }
     get subdirNameList() {
-        return h(this, "_subdirNameList", this.subdirMapChangeCount, () => this.subdirList.map(e => e.name));
+        return l(this, "_subdirNameList", this.subdirMapChangeCount, () => this.subdirList.map(e => e.name));
     }
     get sortedSubdirList() {
-        return h(this, "_sortedSubdirList", this.subdirMapChangeCount, () => this.subdirList.sort((e, i) => e.cmp(i)));
+        return l(this, "_sortedSubdirList", this.subdirMapChangeCount, () => this.subdirList.sort((e, i) => e.cmp(i)));
     }
     get sortedSubdirNameList() {
-        return h(this, "_sortedSubdirNameList", this.subdirMapChangeCount, () => this.sortedSubdirList.map(e => e.nameNum));
+        return l(this, "_sortedSubdirNameList", this.subdirMapChangeCount, () => this.sortedSubdirList.map(e => e.nameNum));
     }
     get fileList() {
-        return h(this, "_fileList", this.fileMapChangeCount, () => this.created && this.fileMap ? Object.values(this.fileMap).filter(e => e.created) : []);
+        return l(this, "_fileList", this.fileMapChangeCount, () => this.created && this.fileMap ? Object.values(this.fileMap).filter(e => e.created) : []);
     }
     get fileNameList() {
-        return h(this, "_fileNameList", this.fileMapChangeCount, () => this.fileList.map(e => e.name));
+        return l(this, "_fileNameList", this.fileMapChangeCount, () => this.fileList.map(e => e.name));
     }
     get sortedFileList() {
-        return h(this, "_sortedFileList", this.fileMapChangeCount, () => this.fileList.sort((e, i) => e.cmp(i)));
+        return l(this, "_sortedFileList", this.fileMapChangeCount, () => this.fileList.sort((e, i) => e.cmp(i)));
     }
     get sortedFileNameList() {
-        return h(this, "_sortedFileNameList", this.fileMapChangeCount, () => this.sortedFileList.map(e => e.nameNum));
+        return l(this, "_sortedFileNameList", this.fileMapChangeCount, () => this.sortedFileList.map(e => e.nameNum));
     }
     *allSubdirs() {
         var e, i, t = this.subdirList;
@@ -173,7 +173,7 @@ class u extends e {
         let r = !1;
         for (i of t) {
             var s = i.nameNum;
-            if (isNaN(s)) {
+            if (d(s)) {
                 if (r) return;
             } else if (e(s)) yield i, r = !0; else if (r) return;
         }
@@ -183,19 +183,19 @@ class u extends e {
         let r = !1;
         for (let e = t.length - 1; 0 <= e; --e) {
             var s = t[e], a = s.nameNum;
-            if (isNaN(a)) {
+            if (d(a)) {
                 if (r) return;
             } else if (i(a)) yield s, r = !0; else if (r) return;
         }
     }
 }
 
-function h(e, i, t, r) {
+function l(e, i, t, r) {
     var e = e.cache, s = i + "ChangeCount";
     return e[i] && e[s] == t || (e[i] = r(), e[s] = t), e[i];
 }
 
-function l(e) {
+function n(e) {
     if (e.created && !e._subdirMap && !e.subdirMapLoaded) {
         e.subdirMapLoaded = !0;
         var i = e.qyCache;
@@ -203,13 +203,13 @@ function l(e) {
             i = i.qyKVData.getValueSync(e.subdirMapKey);
             if (i) {
                 var t, r = e._subdirMap = {};
-                for (t in i) r[t] = new u(t, !0, e);
+                for (t in i) r[t] = new h(t, !0, e);
             }
         }
     }
 }
 
-function n(e) {
+function o(e) {
     if (e.created && !e._fileMap && !e.fileMapLoaded) {
         e.fileMapLoaded = !0;
         var i = e.qyCache;
@@ -224,5 +224,5 @@ function n(e) {
 }
 
 export {
-    u as QyDir
+    h as QyDir
 };

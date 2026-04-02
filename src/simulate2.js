@@ -1,5 +1,5 @@
 import {
-    join as t
+    join as e
 } from "node:path";
 
 import {
@@ -14,96 +14,99 @@ import {
 import {
     folderOrFileExists as l,
     randomInt as c,
-    sleep as g
+    sleep as m
 } from "./QyUtils.js";
 
 import {
-    runQueries as m
+    logger as f
+} from "./QyLogger.js";
+
+import {
+    runQueries as g
 } from "../scripts/flights2_queries.js";
 
-logger.level = "info";
+f.level = "info";
 
-let s = "../GraphCourse_DemoData_ArangoDB-2", f = "./tmp/simulate2", d, p;
+let s = "../GraphCourse_DemoData_ArangoDB-2", p = "C:\\tmp\\simulate2", d, h;
 
-async function h(e) {
-    return JSON.parse(await o(t(s, e)));
+async function u(t) {
+    return JSON.parse(await o(e(s, t)));
 }
 
-function u() {
+function v() {
     return d[c(d.length)];
 }
 
-function v(e) {
-    var t, o = c(p.length), {
+function w(t) {
+    var e, o = c(h.length), {
         Year: s,
         Month: r,
         Day: i
-    } = p[o], a = p[c(p.length)], n = {};
-    for (t in a) 1 == c(2) && (n[t] = a[t]);
-    e.insert([ "flights", s, r, i, o ], n);
+    } = h[o], a = h[c(h.length)], n = {};
+    for (e in a) 1 == c(2) && (n[e] = a[e]);
+    t.insert([ "flights", s, r, i, o ], n);
 }
 
-async function w(e, t) {
-    for (;0 < t--; ) {
+async function y(t, e) {
+    for (;0 < e--; ) {
         switch (c(2)) {
           case 0:
             o = a = i = r = s = void 0;
-            var o, s = e, r = u()._key, i = u(), a = {};
+            var o, s = t, r = v()._key, i = v(), a = {};
             for (o in i) 1 == c(2) && (a[o] = i[o]);
             s.insert([ "airports", r ], a);
             break;
 
           case 1:
-            v(e);
+            w(t);
         }
-        await g(1);
+        await m(1);
     }
 }
 
-function y(e) {
-    var t = e;
+function b(t) {
+    var e = t;
     console.time("insertAirports");
-    var o, s = t.batch;
+    var o, s = e.batch;
     for (o of d) s.insert("airports/" + o._key, o);
     s.run(), console.timeEnd("insertAirports");
-    t = e;
-    logger.log("insertFlights begin"), console.time("insertFlights");
-    var r, i = t.batch;
-    for (let e = 0; e < p.length; ++e) {
-        var a = p[e], {
+    e = t;
+    f.log("insertFlights begin"), console.time("insertFlights");
+    var r, i = e.batch;
+    for (let t = 0; t < h.length; ++t) {
+        var a = h[t], {
             Year: n,
             Month: l,
             Day: c
         } = a;
-        i.insert(`flights/${n}/${l}/${c}/` + e, a);
+        i.insert(`flights/${n}/${l}/${c}/` + t, a);
     }
-    i.run(), logger.log("insertFlights end"), console.timeEnd("insertFlights"), 
-    console.time("createFlightsIndex");
-    for (r of t.dir("flights").subdirList) for (var g of r.subdirList) for (var m of g.subdirList) i.createIndex(m, [ "_from", "_to" ]);
+    i.run(), f.log("insertFlights end"), console.timeEnd("insertFlights"), console.time("createFlightsIndex");
+    for (r of e.dir("flights").subdirList) for (var m of r.subdirList) for (var g of m.subdirList) i.createIndex(g, [ "_from", "_to" ]);
     i.run(), console.timeEnd("createFlightsIndex");
 }
 
 (async () => {
     console.time("total");
-    let t = process.argv[2] || 1e3, o = process.argv[3] || 100, e;
+    let e = +(process.argv[2] || 1e3), o = +(process.argv[3] || 100), t;
     if ("true" == process.argv[4]) {
         try {
-            await a(f, {
+            await a(p, {
                 recursive: !0
             });
-        } catch (e) {}
-        e = !0;
-    } else await l(f) || (e = !0);
-    process.argv[5] && (logger.level = process.argv[5]), console.time("loadData"), 
-    [ d, p ] = await Promise.all([ h("airports.json"), h("flights.json") ]), await !console.timeEnd("loadData"), 
-    console.log(`airports:${d.length}, flights:` + p.length);
-    var s = new n(f, {
-        fileLogLevel: "basic"
-    }), r = (e && (await s.start(), y(s), await s.stop()), await s.start(), m(s), 
-    `simulate ${t} ` + o), i = (console.time(r), console.time("simulateStop"), []);
-    for (let e = 0; e < t; ++e) i.push(w(s, o));
-    await Promise.all(i), console.timeEnd(r), logger.log(`Simulate ${t} for ${o} ended.`), 
-    console.time("del%"), s.delDir("%"), console.timeEnd("del%"), y(s), await s.stop(), 
+        } catch (t) {}
+        t = !0;
+    } else await l(p) || (t = !0);
+    process.argv[5] && (f.level = process.argv[5]), console.time("loadData"), [ d, h ] = await Promise.all([ u("airports.json"), u("flights.json") ]), 
+    await !console.timeEnd("loadData"), console.log(`airports:${d.length}, flights:` + h.length);
+    var s = new n(p, {
+        fileLogLevel: "basic",
+        maxInMemSnapshotCount: 3
+    }), r = (t && (await s.start(), b(s), await s.stop()), await s.start(), g(s), 
+    `simulate ${e} ` + o), i = (console.time(r), console.time("simulateStop"), []);
+    for (let t = 0; t < e; ++t) i.push(y(s, o));
+    await Promise.all(i), console.timeEnd(r), f.log(`Simulate ${e} for ${o} ended.`), 
+    console.time("del%"), s.delDir("%"), console.timeEnd("del%"), b(s), await s.stop(), 
     console.timeEnd("simulateStop"), console.time("start"), await s.start(), console.timeEnd("start"), 
-    m(s), await s.stop(), console.timeEnd("total"), global.gc && global.gc();
+    g(s), await s.stop(), console.timeEnd("total"), global.gc && global.gc();
 })();

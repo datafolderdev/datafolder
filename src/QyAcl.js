@@ -1,181 +1,178 @@
 import u from "node:fs/promises";
 
 import {
-    mergeContent as m,
-    mergeContentChanges as n,
+    mergeContent as g,
+    mergeContentChanges as i,
     setValByNamePath as a
 } from "./QyFileContentUtils.js";
 
 import {
-    isEmptyObj as g,
-    arrayLast as s
+    isEmptyObj as m,
+    arrayLast as n
 } from "./QyUtils.js";
 
 import {
     logger as d
 } from "./QyLogger.js";
 
-function r(r, e) {
+function r(r, t) {
     var {
         A: r,
-        R: t,
+        R: e,
         M: a,
-        D: s
+        D: n
     } = r;
-    s && delete s[e], e.startsWith("c") ? a && delete a[e] : (r && delete r[e], 
-    t && delete t[e]);
+    n && delete n[t], t.startsWith("c") ? a && delete a[t] : (r && delete r[t], 
+    e && delete e[t]);
 }
 
-function e(r, e) {
-    var t, a, s, n, {
-        D: e,
-        A: i,
+function t(r, t) {
+    var e, a, n, i, {
+        D: t,
+        A: s,
         R: o,
         M: f
-    } = e;
-    for (t in e) null != r[t] && (r[t] = void 0);
-    for (a in i) {
+    } = t;
+    for (e in t) null != r[e] && (r[e] = void 0);
+    for (a in s) {
         var c, l = r[a] || (r[a] = {});
-        for (c of i[a]) l[c] = 1;
+        for (c of s[a]) l[c] = 1;
     }
-    for (s in o) {
-        var u = r[s];
+    for (n in o) {
+        var u = r[n];
         if (u) {
-            var d = o[s];
+            var d = o[n];
             if (d) {
                 for (var h of d) delete u[h];
-                g(u) && (r[s] = void 0);
+                m(u) && (r[n] = void 0);
             }
         }
     }
-    for (n in f) r[n] = m(r[n], f[n]);
+    for (i in f) r[i] = g(r[i], f[i]);
 }
 
-function t(r, e) {
-    var t, {
+function e(r, t) {
+    var e, {
         D: r,
         A: a,
-        R: s,
-        M: n
+        R: n,
+        M: i
     } = r;
-    for (t of [ r, a, s, n ]) for (var i in t) e(i);
+    for (e of [ r, a, n, i ]) for (var s in e) t(s);
 }
 
-class i {
-    constructor() {
-        Object.assign(this, {
-            cmdArgAsMapObj: {},
-            cmdCount: 0,
-            batchSize: 0
-        });
-    }
-    pushCmd(r, e, t) {
+class s {
+    cmdArgAsMapObj = {};
+    cmdCount = 0;
+    batchSize = 0;
+    constructor() {}
+    pushCmd(r, t, e = void 0) {
         switch (++this.cmdCount, r) {
           case "A":
-            o(this, [ "A", e, t ]), f(this, [ "R", e, t ]);
+            o(this, [ "A", t, e ]), f(this, [ "R", t, e ]);
             break;
 
           case "R":
-            o(this, [ "R", e, t ]), f(this, [ "A", e, t ]);
+            o(this, [ "R", t, e ]), f(this, [ "A", t, e ]);
             break;
 
           case "D":
-            if (o(this, [ "D", e ]), e.startsWith("c")) f(this, [ "M", e ]); else for (var a of [ "A", "R" ]) f(this, [ a, e ]);
+            if (o(this, [ "D", t ]), t.startsWith("c")) f(this, [ "M", t ]); else for (var a of [ "A", "R" ]) f(this, [ a, t ]);
             break;
 
           case "M":
             {
-                var s = this.cmdArgAsMapObj;
-                let r = s.M;
-                s = (r = null == r ? s.M = {} : r)[e];
-                r[e] = null != s ? n(s, t) : t;
+                var n = this.cmdArgAsMapObj;
+                let r = n.M;
+                n = (r = null == r ? n.M = {} : r)[t];
+                r[t] = null != n ? i(n, e) : e;
                 break;
             }
 
           default:
-            d.error(`unsupported cmdName:${r}, called with ${e} ` + t), --this.cmdCount;
+            d.error(`unsupported cmdName:${r}, called with ${t} ` + e), --this.cmdCount;
         }
     }
     pushCmdArgAsListObj(r) {
         if (r) {
             ++this.batchSize;
-            var e, t, a, {
-                D: s,
-                M: n
+            var t, e, a, {
+                D: n,
+                M: i
             } = r;
-            for (e in s) this.pushCmd("D", e);
-            for (t of [ "A", "R" ]) {
-                var i, o = r[t];
-                for (i in o) for (var f of o[i]) this.pushCmd(t, i, f);
+            for (t in n) this.pushCmd("D", t);
+            for (e of [ "A", "R" ]) {
+                var s, o = r[e];
+                for (s in o) for (var f of o[s]) this.pushCmd(e, s, f);
             }
-            for (a in n) this.pushCmd("M", a, n[a]);
+            for (a in i) this.pushCmd("M", a, i[a]);
         }
         return this;
     }
     takeCmdArgAsListObj() {
-        var r, e = this.cmdArgAsMapObj;
+        var r, t = this.cmdArgAsMapObj;
         Object.assign(this, {
             cmdArgAsMapObj: {},
             cmdCount: 0,
             batchSize: 0
         });
         for (r of [ "A", "R" ]) {
-            var t, a = e[r];
-            for (t in a) {
-                var s = Object.keys(a[t]);
-                0 < s.length ? a[t] = s : delete a[t];
+            var e, a = t[r];
+            for (e in a) {
+                var n = Object.keys(a[e]);
+                0 < n.length ? a[e] = n : delete a[e];
             }
-            g(a) && delete e[r];
+            m(a) && delete t[r];
         }
         var {
-            D: n,
-            M: i
-        } = e;
-        return n && g(n) && delete e.D, i && g(i) && delete e.M, e;
+            D: i,
+            M: s
+        } = t;
+        return i && m(i) && delete t.D, s && m(s) && delete t.M, t;
     }
     toAclBuffer(r) {
-        var e, t = this.batchSize;
-        if (0 < t) return r = r, t = t, e = this.takeCmdArgAsListObj(), e = Buffer.from(JSON.stringify(e)), 
-        Buffer.concat([ l([ r, t, e.length ]), e ]);
+        var t, e = this.batchSize;
+        if (0 < e) return r = r, e = e, t = this.takeCmdArgAsListObj(), t = Buffer.from(JSON.stringify(t)), 
+        Buffer.concat([ l([ r, e, t.length ]), t ]);
     }
 }
 
-function o(r, e, t = 1) {
-    a(r.cmdArgAsMapObj, e, t);
+function o(r, t, e = 1) {
+    a(r.cmdArgAsMapObj, t, e);
 }
 
-function f(r, e) {
-    let t = r.cmdArgAsMapObj;
-    if (t && e && !(e.length <= 1)) {
-        for (let r = 0; r < e.length - 1; ++r) if (null == (t = t[e[r]])) return;
-        delete t[s(e)];
+function f(r, t) {
+    let e = r.cmdArgAsMapObj;
+    if (e && t && !(t.length <= 1)) {
+        for (let r = 0; r < t.length - 1; ++r) if (null == (e = e[t[r]])) return;
+        delete e[n(t)];
     }
 }
 
-async function c(e, r = !1, t = 0) {
+async function c(t, r = !1, e = 0) {
     try {
-        return await v(e, await u.readFile(e), r, t);
+        return await A(t, await u.readFile(t), r, e);
     } catch (r) {
-        throw d.error(`Reading ${e} failed:`, r), r;
+        throw d.error(`Reading ${t} failed:`, r), r;
     }
 }
 
-let A = [ 1, 2, 4, 8 ];
+let v = [ 1, 2, 4, 8 ];
 
-function l(e) {
-    var t = e.length, a = new Array(t), s = new Array(t);
-    let n = t << 6, i = 1;
-    for (let r = 0; r < t; ++r) {
-        var o = a[r] = (o = e[r]) <= 255 ? 0 : o <= 65535 ? 1 : o <= 4294967295 ? 2 : 3, o = (n |= o << (r << 1), 
-        s[r] = A[o]);
-        i += o;
+function l(t) {
+    var e = t.length, a = new Array(e), n = new Array(e);
+    let i = e << 6, s = 1;
+    for (let r = 0; r < e; ++r) {
+        var o = a[r] = (o = t[r]) <= 255 ? 0 : o <= 65535 ? 1 : o <= 4294967295 ? 2 : 3, o = (i |= o << (r << 1), 
+        n[r] = v[o]);
+        s += o;
     }
-    var f = Buffer.allocUnsafe(i);
-    f.writeUInt8(n);
+    var f = Buffer.allocUnsafe(s);
+    f.writeUInt8(i);
     let c = 1;
-    for (let r = 0; r < t; ++r) {
+    for (let r = 0; r < e; ++r) {
         h = d = u = l = void 0;
-        var [ l, u, d, h = 0 ] = [ f, e[r], s[r], c ];
+        var [ l, u, d, h = 0 ] = [ f, t[r], n[r], c ];
         switch (d) {
           case 1:
             l.writeUInt8(u, h);
@@ -192,62 +189,62 @@ function l(e) {
           default:
             l.writeBigUInt64BE(BigInt(u), h);
         }
-        c += s[r];
+        c += n[r];
     }
     return f;
 }
 
-function h(e, t, a) {
-    var s = e.readUInt8(t), n = (++t, s >> 6 & 3);
-    for (let r = 0; r < n; ++r) {
-        var i = A[s >> (r << 1) & 3];
-        a[r] = ((r, e, t = 0) => {
-            switch (e) {
+function h(t, e, a) {
+    var n = t.readUInt8(e), i = (++e, n >> 6 & 3);
+    for (let r = 0; r < i; ++r) {
+        var s = v[n >> (r << 1) & 3];
+        a[r] = ((r, t, e = 0) => {
+            switch (t) {
               case 1:
-                return r.readUInt8(t);
+                return r.readUInt8(e);
 
               case 2:
-                return r.readUInt16BE(t);
+                return r.readUInt16BE(e);
 
               case 4:
-                return r.readUInt32BE(t);
+                return r.readUInt32BE(e);
 
               default:
-                return Number(r.readBigUInt64BE(t));
+                return Number(r.readBigUInt64BE(e));
             }
-        })(e, i, t), t += i;
+        })(t, s, e), e += s;
     }
-    return t;
+    return e;
 }
 
-async function v(t, r, a, s) {
-    var n = [];
-    for (let e = 0; e < r.length; ) {
-        var i = [], o = h(r, e, i), [ i, f, c ] = i;
-        if (i <= s) d.warn(`changeId ${i} <= currentChangeId ${s} at ${t}:${e}. Ignored.`), 
-        e = o + c; else {
-            s + f != i && d.warn(`currentChangeId ${s} + batchSize ${f} != changeId ` + i);
+async function A(e, r, a, n) {
+    var i = [];
+    for (let t = 0; t < r.length; ) {
+        var s = [], o = h(r, t, s), [ s, f, c ] = s;
+        if (s <= n) d.warn(`changeId ${s} <= currentChangeId ${n} at ${e}:${t}. Ignored.`), 
+        t = o + c; else {
+            n + f != s && d.warn(`currentChangeId ${n} + batchSize ${f} != changeId ` + s);
             try {
                 var l = JSON.parse(r.subarray(o, o + c));
-                n.push([ i, l ]), s = i, e = o + c;
+                i.push([ s, l ]), n = s, t = o + c;
             } catch (r) {
-                if (d.error(`Parse ${t} failed at ${e}:`, r), a) return d.warn(`Autorepair by truncating ${t} to ` + e), 
-                null == (f = await u.truncate(t, e)) ? d.log("truncate success") : d.error("truncate failed:", f), 
-                n;
+                if (d.error(`Parse ${e} failed at ${t}:`, r), a) return d.warn(`Autorepair by truncating ${e} to ` + t), 
+                null == (f = await u.truncate(e, t)) ? d.log("truncate success") : d.error("truncate failed:", f), 
+                i;
                 throw r;
             }
         }
     }
-    return n;
+    return i;
 }
 
 export {
-    i as QyAclCmdGenerator,
-    e as applyAclChange,
-    t as iterCmdKeys,
+    r as delCmdKey,
+    t as applyAclChange,
+    e as iterCmdKeys,
+    s as QyAclCmdGenerator,
     c as readAclFile,
-    v as readAclBuffer,
     l as numsToBuffer,
     h as bufferToNums,
-    r as delCmdKey
+    A as readAclBuffer
 };

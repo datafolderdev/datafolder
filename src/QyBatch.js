@@ -3,7 +3,7 @@ import {
 } from "node:util";
 
 import {
-    mergeContentAndGenDelta as l,
+    mergeContentAndGenDelta as c,
     objToDelMarks as i
 } from "./QyFileContentUtils.js";
 
@@ -15,7 +15,7 @@ import {
     getSuffix as g,
     SpecialFilePaths as t,
     toSingleName as C,
-    isSimpleType as c
+    isSimpleType as l
 } from "./QyUtils.js";
 
 import {
@@ -38,14 +38,25 @@ import {
     getPrefixPropPaths as y
 } from "./QyIndexPropTree.js";
 
-let u = Array.isArray, f = e.$del, D = t.IndexPropPathsFileName, p = {
+import {
+    logger as D
+} from "./QyLogger.js";
+
+let u = Array.isArray, f = e.$del, v = t.IndexPropPathsFileName, p = {
     none: 0,
     basic: 1,
     delta: 2,
     all: 3
 };
 
-class v extends m {
+class _ extends m {
+    fileLogLevel;
+    actionQueue;
+    changeId;
+    changeList;
+    syncList;
+    qyAclCmdGenerator;
+    qyCmdObjHistory;
     constructor(e, t) {
         super(e), t = {
             ...d("QyBatch"),
@@ -66,31 +77,31 @@ class v extends m {
         return s(e) && (e = n(e)), this.createDirP(e, t);
     }
     createDirP(e, t = this.currentDir) {
-        return _(this, "createDir", this.qyCache.getOrCreateDir(e, t));
+        return P(this, "createDir", this.qyCache?.getOrCreateDir(e, t));
     }
     delDir(e, t = this.currentDir) {
         return s(e) && (e = n(e)), this.delDirP(e, t);
     }
     delDirP(e, t = this.currentDir) {
-        return _(this, "delDir", this.qyCache.getOrCreateDir(e, t));
+        return P(this, "delDir", this.qyCache.getOrCreateDir(e, t));
     }
     createFile(e, t = this.currentDir) {
         return s(e) && (e = n(e)), this.createFileP(e, t);
     }
     createFileP(e, t = this.currentDir) {
-        return _(this, "createFile", this.qyCache.getOrCreateFile(e, t));
+        return P(this, "createFile", this.qyCache.getOrCreateFile(e, t));
     }
     delFile(e, t = this.currentDir) {
         return s(e) && (e = n(e)), this.delFileP(e, t);
     }
     delFileP(e, t = this.currentDir) {
-        return _(this, "delFile", this.qyCache.getOrCreateFile(e, t));
+        return P(this, "delFile", this.qyCache.getOrCreateFile(e, t));
     }
     createIndex(e, t, r = this.currentDir) {
         return s(e) && (e = n(e)), this.createIndexP(e, t, r);
     }
     createIndexP(e, t, r = this.currentDir) {
-        return u(t) || (t = [ t ]), _(this, "createIndex", this.qyCache.getOrCreateDir(e, r), {
+        return u(t) || (t = [ t ]), P(this, "createIndex", this.qyCache?.getOrCreateDir(e, r), {
             indexPropPathList: t
         });
     }
@@ -98,7 +109,7 @@ class v extends m {
         return s(e) && (e = n(e)), this.delIndexP(e, t, r);
     }
     delIndexP(e, t, r = this.currentDir) {
-        return _(this, "delIndex", this.qyCache.getOrCreateDir(e, r), {
+        return P(this, "delIndex", this.qyCache.getOrCreateDir(e, r), {
             indexPropPath: t
         });
     }
@@ -106,8 +117,8 @@ class v extends m {
         return s(e) && (e = n(e)), this.insertP(e, t, r);
     }
     insertP(e, t, r = this.currentDir) {
-        return _(this, "insert", this.qyCache.getOrCreateFile(e, r), {
-            content: c(t) ? t : structuredClone(t)
+        return P(this, "insert", this.qyCache.getOrCreateFile(e, r), {
+            content: l(t) ? t : structuredClone(t)
         });
     }
     remove(e, t, r = this.currentDir) {
@@ -130,28 +141,28 @@ class v extends m {
         return s(e) && (e = n(e)), this.delContentP(e, t);
     }
     delContentP(e, t = this.currentDir) {
-        return _(this, "delContent", this.qyCache.getOrCreateFile(e, t));
+        return P(this, "delContent", this.qyCache.getOrCreateFile(e, t));
     }
     insertTrigger(e, t, r, i) {
         return s(t) && (t = n(t)), r = (r = s(r) ? [ r ] : r).map(e => s(e) ? a(e) : e), 
-        _(this, "insertTrigger", this.qyCache.getOrCreateTriggerFile(e), {
+        P(this, "insertTrigger", this.qyCache.getOrCreateTriggerFile(e), {
             fileNamePath: t,
             propNamePathList: r,
             modCode: i
         });
     }
     removeTrigger(e) {
-        return _(this, "removeTrigger", this.qyCache.getOrCreateTriggerFile(e));
+        return P(this, "removeTrigger", this.qyCache.getOrCreateTriggerFile(e));
     }
     insertRpc(e, t) {
-        return _(this, "insertRpc", this.qyCache.getOrCreateRpcFile(e), {
+        return P(this, "insertRpc", this.qyCache.getOrCreateRpcFile(e), {
             modCode: t
         });
     }
     removeRpc(e) {
-        return _(this, "removeRpc", this.qyCache.getOrCreateRpcFile(e));
+        return P(this, "removeRpc", this.qyCache.getOrCreateRpcFile(e));
     }
-    run(e) {
+    run(e = !1) {
         var {
             actionQueue: t,
             fileLogLevel: r,
@@ -165,17 +176,17 @@ class v extends m {
             changeList: t,
             qyAclCmdGenerator: s,
             qyCmdObjHistory: o,
-            syncList: l
-        } = this, c = t.length;
-        if (0 == c) return i.decreaseChangeId(), 0;
-        var h = g(c), s = s.takeCmdArgAsListObj();
+            syncList: c
+        } = this, l = t.length;
+        if (0 == l) return i.decreaseChangeId(), 0;
+        var h = g(l), s = s.takeCmdArgAsListObj();
         let d;
         0 < r && (r = t.map(({
             logStr: e
-        }) => e).join("\n"), d = new Date().toISOString() + `: ${c} change${h}:
+        }) => e).join("\n"), d = new Date().toISOString() + `: ${l} change${h}:
 ${r}
 `);
-        var m, u, c = i.save(a, s, d, (e => {
+        var m, u, l = i.save(a, s, d, (e => {
             var t = e.syncList, r = t.length;
             for (let e = 0; e < r; e += 2) {
                 var i, n = e + 1, a = t[e], s = t[n];
@@ -183,7 +194,7 @@ ${r}
                 t[n] = 0 < i.length ? i : void 0) : t[n] = s.fileContent;
             }
             if (0 < r) return t;
-        })(this), e), h = (l.length = 0, o.push(s), t.filter(({
+        })(this), e), h = (c.length = 0, o.push(s), t.filter(({
             item: e,
             delta: t
         }) => t && 0 < e.triggerNodes?.length));
@@ -192,7 +203,7 @@ ${r}
             item: m,
             delta: u
         } of h) for (var f of m.triggerNodes) f.checkTrigger(m, u);
-        return e ? c : a;
+        return e ? l : a;
     }
     getTopHistoryCmdObj() {
         return this.qyCmdObjHistory.top();
@@ -235,9 +246,7 @@ ${r}
             modCode: t
         } = e, r = this._action_insert({
             item: e,
-            content: {
-                modCode: t
-            }
+            content: t
         });
         return r && this.qyCache.insertRpc(e.name, t), r;
     }
@@ -253,21 +262,20 @@ ${r}
         var e, {
             item: t,
             indexPropPathList: r
-        } = t, i = this.qyCache.getOrCreateIndexDir(t), n = i.getOrCreateFile(D), {
+        } = t, i = this.qyCache.getOrCreateIndexDir(t), n = i.getOrCreateFile(v), {
             fileContent: a,
             qyIndexPropTree: s
         } = (n.created || this._action_createFile({
             item: n
-        }), n), o = [], l = {};
+        }), n), o = [], c = {};
         for (e of r) {
-            var c = C(e);
-            a && a[c] || (o.push(e), l[c] = 1, s.insert(e));
+            var l = C(e);
+            a && a[l] || (o.push(e), c[l] = 1, s.insert(e));
         }
         if (0 != o.length) {
-            logger.log(`Creating index ${JSON.stringify(o)} for ` + t.fullPath), 
-            this._action_insert({
+            D.log(`Creating index ${JSON.stringify(o)} for ` + t.fullPath), this._action_insert({
                 item: n,
-                content: l
+                content: c
             });
             {
                 var h, d = this, m = t, u = i, r = y(o);
@@ -296,7 +304,7 @@ ${r}
             item: e,
             indexPropPath: i
         } = e, e = this.qyCache.getIndexDir(e);
-        e && ((r = e.getFile(D)) ? (t = r.qyIndexPropTree, this._action_insert({
+        e && ((r = e.getFile(v)) ? (t = r.qyIndexPropTree, this._action_insert({
             item: r,
             content: {
                 [C(i)]: f
@@ -307,7 +315,7 @@ ${r}
             item: e
         }));
     }
-    _action_delFile(e, t) {
+    _action_delFile(e, t = !1) {
         e.actionName = "delFile";
         var r = e.item;
         if (!r.created) return !1;
@@ -318,7 +326,7 @@ ${r}
             parentDir: i,
             name: n
         } = r;
-        return r.created = !1, P(this, e), t || x(this, i, "R", i.fileMapKey, n), 
+        return r.created = !1, x(this, e), t || L(this, i, "R", i.fileMapKey, n), 
         !0;
     }
     _action_delDir(e) {
@@ -334,33 +342,33 @@ ${r}
             fileMapKey: o
         } = t;
         if (a) {
-            x(this, t, "D", o);
-            for (var l of t.fileList) this._action_delFile({
-                item: l
+            L(this, t, "D", o);
+            for (var c of t.fileList) this._action_delFile({
+                item: c
             }, !0);
         }
         if (n) {
-            x(this, t, "D", s);
-            for (var c of t.allSubdirs()) {
+            L(this, t, "D", s);
+            for (var l of t.allSubdirs()) {
                 let {
                     subdirMap: e,
                     fileMap: t,
                     subdirMapKey: r,
                     fileMapKey: i
-                } = c;
-                if (e && x(this, c, "D", r), t) {
-                    x(this, c, "D", i);
-                    for (var h of c.fileList) this._action_delFile({
+                } = l;
+                if (e && L(this, l, "D", r), t) {
+                    L(this, l, "D", i);
+                    for (var h of l.fileList) this._action_delFile({
                         item: h
                     }, !0);
                 }
-                P(this, {
+                x(this, {
                     actionName: "delDir",
-                    item: c
-                }), c.created = !1;
+                    item: l
+                }), l.created = !1;
             }
         }
-        return !!r && (t.created = !1, P(this, e), x(this, r, "R", r.subdirMapKey, i), 
+        return !!r && (t.created = !1, x(this, e), L(this, r, "R", r.subdirMapKey, i), 
         !0);
     }
     _action_delContent(e) {
@@ -372,7 +380,7 @@ ${r}
                 oldValue: r,
                 newValue: f
             }
-        }), P(this, e), x(this, t, "D", t.fileContentKey), F(this, t, r), !0);
+        }), x(this, e), L(this, t, "D", t.fileContentKey), F(this, t, r), !0);
     }
     _action_insert(e) {
         e.actionName = "insert";
@@ -380,20 +388,20 @@ ${r}
             item: t,
             content: r
         } = e;
-        if (null == r) return logger.warn(`Saving undefined to ${t.fullPath}. Not making any change.`), 
+        if (null == r) return D.warn(`Saving undefined to ${t.fullPath}. Not making any change.`), 
         !1;
         t.created || this._action_createFile({
             item: t
         });
-        var i, n, r = l(t.fileContent, r), {
+        var i, n, r = c(t.fileContent, r), {
             merged: a,
             delta: s
         } = r;
         return !!s && ({
             oldValue: s,
             newValue: i
-        } = s, !!i) && (n = t.fileContentKey, null == a ? x(this, t, "D", n) : x(this, t, "M", n, i), 
-        Object.assign(e, r), P(this, e), t.setContent(a), F(this, t, s, i, a), !0);
+        } = s, !!i) && (n = t.fileContentKey, null == a ? L(this, t, "D", n) : L(this, t, "M", n, i), 
+        Object.assign(e, r), x(this, e), t.setContent(a), F(this, t, s, i, a), !0);
     }
     _action_createFile(e) {
         e.actionName = "createFile";
@@ -403,7 +411,7 @@ ${r}
         }), Object.assign(r, {
             created: !0,
             fileContentLoaded: !0
-        }), P(this, e), x(this, t, "A", t.fileMapKey, r.name), !0);
+        }), x(this, e), L(this, t, "A", t.fileMapKey, r.name), !0);
     }
     _action_createDir(e) {
         e.actionName = "createDir";
@@ -415,18 +423,18 @@ ${r}
                 created: !0,
                 subdirMapLoaded: !0,
                 fileMapLoaded: !0
-            }), P(this, {
+            }), x(this, {
                 actionName: "createDir",
                 item: e
             });
             var i = e.parentDir;
-            x(this, i, "A", i.subdirMapKey, e.name);
+            L(this, i, "A", i.subdirMapKey, e.name);
         }
         return !0;
     }
 }
 
-function _(e, t, r, i) {
+function P(e, t, r, i) {
     return e.actionQueue.push({
         actionName: t,
         item: r,
@@ -434,7 +442,7 @@ function _(e, t, r, i) {
     }), e;
 }
 
-function P(e, t) {
+function x(e, t) {
     var {
         changeList: e,
         fileLogLevel: r
@@ -458,7 +466,7 @@ function P(e, t) {
     })(t, r)), e.push(t);
 }
 
-function x(e, t, r, i, n) {
+function L(e, t, r, i, n = void 0) {
     var {
         qyAclCmdGenerator: e,
         qyCache: a,
@@ -469,7 +477,7 @@ function x(e, t, r, i, n) {
     a && a.qyKVData.removeKey(i) && s.push(i, t);
 }
 
-function F(e, t, r, i, n) {
+function F(e, t, r, i = void 0, n = void 0) {
     var {
         underHiddenFolder: t,
         name: a,
@@ -478,27 +486,27 @@ function F(e, t, r, i, n) {
     if (!t) {
         var o = e.qyCache.getIndexDir(s);
         if (o) {
-            t = o.getFile(D);
-            if (t) for (var l of t.qyIndexPropTree.getAllIndexPropPaths()) N(e, o.searchOrCreateSubdir(l), l, a, r, i, n);
+            t = o.getFile(v);
+            if (t) for (var c of t.qyIndexPropTree.getAllIndexPropPaths()) N(e, o.searchOrCreateSubdir(c), c, a, r, i, n);
         }
     }
 }
 
-function N(t, e, r, i, n, a, s) {
+function N(t, e, r, i, n, a, s = void 0) {
     e = h(e, r, i, n, a, s);
     if (e) {
-        var o, l, c, {
+        var o, c, l, {
             toAddFileList: r,
             toDelFileList: i
         } = e;
         for (o of r) t._action_createFile({
             item: o
         });
-        for (l of i) t._action_delFile({
-            item: l
+        for (c of i) t._action_delFile({
+            item: c
         });
-        for (c of i) {
-            let e = c.parentDir;
+        for (l of i) {
+            let e = l.parentDir;
             for (;e.created && !e.isHiddenFolder && e.isEmpty; ) t._action_delDir({
                 item: e
             }), e = e.parentDir;
@@ -507,6 +515,9 @@ function N(t, e, r, i, n, a, s) {
 }
 
 class O {
+    maxLength;
+    actionQueue;
+    nextPos;
     constructor(e) {
         Object.assign(this, {
             maxLength: e,
@@ -532,5 +543,5 @@ class O {
 }
 
 export {
-    v as QyBatch
+    _ as QyBatch
 };

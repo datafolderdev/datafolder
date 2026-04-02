@@ -1,10 +1,10 @@
-import e from "node:crypto";
+import n from "node:crypto";
 
 import t from "node:path";
 
-import n from "node:process";
+import e from "node:process";
 
-import a from "node:fs/promises";
+import l from "node:fs/promises";
 
 import o from "node:fs";
 
@@ -14,35 +14,37 @@ import {
     fileURLToPath as r
 } from "node:url";
 
-var s = t.dirname(r(import.meta.url)), u = Object.fromEntries([ "$del", "$link", "$rpl", "$spec", "$raw", "$all", "$clone", "$ext", "$or", "$and", "$gt", "$lt", "$gte", "$lte" ].map(r => [ r, r ])), f = "%", f = {
-    HiddenFolderName: f,
-    TriggerDirPath: [ f, "trigger" ],
-    RpcDirPath: [ f, "rpc" ],
-    IndexDirPath: [ f, "index" ],
+import {
+    logger as u
+} from "../src/QyLogger.js";
+
+var a = t.dirname(r(import.meta.url)), f = Object.fromEntries([ "$del", "$link", "$rpl", "$spec", "$raw", "$all", "$clone", "$ext", "$or", "$and", "$gt", "$lt", "$gte", "$lte" ].map(r => [ r, r ])), c = "%", c = {
+    HiddenFolderName: c,
+    TriggerDirPath: [ c, "trigger" ],
+    RpcDirPath: [ c, "rpc" ],
+    IndexDirPath: [ c, "index" ],
     IndexPropPathsFileName: "propPaths"
 };
 
-function c(r) {
+function s(r) {
     return r.startsWith("{") && r.endsWith("}");
 }
 
-function l(r) {
-    return c(r) && r.substring(1, r.length - 1);
+function d(r) {
+    return s(r) && r.substring(1, r.length - 1);
 }
 
 function m(r) {
-    return 1e12 < r ? Math.round(100 * r / 1e12) / 100 + "TB" : 1e9 < r ? Math.round(100 * r / 1e9) / 100 + "GB" : 1e6 < r ? Math.round(100 * r / 1e6) / 100 + "MB" : 1e3 < r ? Math.round(100 * r / 1e3) / 100 + "KB" : r;
+    return 1e12 < r ? Math.round(100 * r / 1e12) / 100 + "TB" : 1e9 < r ? Math.round(100 * r / 1e9) / 100 + "GB" : 1e6 < r ? Math.round(100 * r / 1e6) / 100 + "MB" : 1e3 < r ? Math.round(100 * r / 1e3) / 100 + "KB" : r.toString();
 }
 
-let p = 10;
-
-function d(r, t = 10) {
-    return e.createHash("sha256").update(r, "utf8").digest("base64url").slice(0, t);
+function p(r, t = 10) {
+    return n.createHash("sha256").update(r, "utf8").digest("base64url").slice(0, t);
 }
 
-var g = 11;
+var h = 11;
 
-function h(r) {
+function g(r) {
     return "d" + r;
 }
 
@@ -50,19 +52,19 @@ function y(r) {
     return "f" + r;
 }
 
-function S(r) {
+function v(r) {
     return "c" + r;
 }
 
 function b(r = 8) {
-    return e.randomBytes(r).toString("hex");
-}
-
-function v(r) {
-    return r[r.length - 1];
+    return n.randomBytes(r).toString("hex");
 }
 
 function $(r) {
+    return r[r.length - 1];
+}
+
+function w(r) {
     if (null != r) for (var t in r) if (null != r[t]) return !1;
     return !0;
 }
@@ -71,192 +73,218 @@ function P(r) {
     return null != r && "object" == typeof r && !(r instanceof Date);
 }
 
-function M(r) {
+function S(r) {
     return "string" == typeof r;
 }
 
-function x(r) {
+function j(r) {
     return "number" == typeof r;
 }
 
-function N(r) {
+function x(r) {
     return "boolean" == typeof r;
 }
 
-function w(r) {
+function B(r) {
     return "function" == typeof r;
 }
 
-function B(r) {
+function M(r) {
     var t = typeof r;
     return "string" == t || "number" == t || "boolean" == t || r instanceof Date;
 }
 
-function j(r) {
+function O(r) {
     let t = r.length;
     for (;null == r[t - 1] && 0 < t; ) --t;
     return r.length = t, r;
 }
 
-function F(e) {
-    return e.promise || (e.promise = new Promise((r, t) => Object.assign(e, {
+function T(n) {
+    return n.promise || (n.promise = new Promise((r, t) => Object.assign(n, {
         resolve: r,
         reject: t
-    }))), e;
+    }))), n;
 }
 
-function A(r) {
+function k(r) {
     return Buffer.isBuffer(r) ? r : Buffer.from(r);
 }
 
-function H(r) {
+function A(r) {
     return 1 < r ? "s" : "";
 }
 
-function O(r) {
-    return a.mkdir(r, {
+function D(r) {
+    return l.mkdir(r, {
         recursive: !0
     });
 }
 
-function T(r) {
-    return O(t.dirname(r));
+function F(r) {
+    return D(t.dirname(r));
 }
 
-async function k(r) {
+async function I(r) {
     try {
-        return (await a.stat(r)).size;
+        return (await l.stat(r)).size;
     } catch (r) {
         return !1;
     }
 }
 
-async function K(r) {
-    return !1 !== await k(r);
+async function W(r) {
+    return !1 !== await I(r);
 }
 
-function L(r, t) {
-    return i.setTimeout(1e3 * r, !0, {
+function E(r, t = void 0) {
+    r *= 1e3;
+    return t ? i.setTimeout(r, !0, {
         signal: t
-    });
+    }) : i.setTimeout(r);
 }
 
-let D = void 0;
+let N;
 
-function E() {
-    for (var r of Object.keys(D)) I(r);
-}
-
-async function U(t) {
+async function L(t) {
     try {
-        await T(t);
-        var r = new Date().toISOString() + ": " + n.argv.join(" ");
-        await a.writeFile(t, r, {
+        await F(t);
+        var r = new Date().toISOString() + ": " + e.argv.join(" ");
+        function n() {
+            for (var r of Object.keys(N)) U(r);
+        }
+        await l.writeFile(t, r, {
             flag: "wx",
             flush: !0
-        }), logger.info("Locked " + t), D ? D[t] = 1 : (D = {
+        }), u.info("Locked " + t), N ? N[t] = 1 : (N = {
             [t]: 1
-        }, n.on("exit", E), n.on("SIGINT", E));
+        }, e.on("exit", n), e.on("SIGINT", n));
     } catch (r) {
-        throw "EEXIST" == r.code && logger.error(`Already started by ${(await a.readFile(t)).toString()}:`, r), 
+        throw "EEXIST" == r.code && u.error(`Already started by ${(await l.readFile(t)).toString()}:`, r), 
         r;
     }
 }
 
-function I(r) {
+function U(r) {
     try {
-        o.unlinkSync(r), logger.info("Unlocked " + r);
+        o.unlinkSync(r), u.info("Unlocked " + r);
     } catch (r) {}
 }
 
-function _(r) {
+function R(r) {
     return r.startsWith("[") && r.endsWith("]") ? JSON.parse(r) : r;
 }
 
-function R(r) {
+function G(r) {
     return Array.isArray(r) ? 1 == r.length ? r[0] : JSON.stringify(r) : r;
 }
 
-function W(r) {
+function H(r) {
     r = r.split("/");
     return r[0] || (r[0] = "/"), r;
 }
 
-function z(r) {
+function J(r) {
     return r.split(".");
 }
 
-function J(r) {
+function Q(r) {
     return r.join(".");
 }
 
-function G(r, t = 0) {
+function z(r, t = 0) {
     return Math.floor(Math.random() * (r - t)) + t;
 }
 
-function C(r) {
-    var t, e = {};
-    for (t of r) e[t] = 1;
-    return e;
+function K(r) {
+    var t, n = {};
+    for (t of r) n[t] = 1;
+    return n;
 }
 
-async function Q(t, e, n, a) {
-    var o = Buffer.allocUnsafe(a);
-    for (let r = 0; r < a; ) {
-        var i = (await e.read(o, r, a - r, n + r)).bytesRead;
-        if (0 == i) return void logger.error(`read ${t} at ${n + r} returning 0 byte`);
-        r += i;
+async function X(t, n, e, o) {
+    var i = Buffer.allocUnsafe(o);
+    for (let r = 0; r < o; ) {
+        var a = (await n.read(i, r, o - r, e + r)).bytesRead;
+        if (0 == a) return void u.error(`read ${t} at ${e + r} returning 0 byte`);
+        r += a;
     }
-    return o;
+    return i;
 }
 
-function X() {
-    var r = n.availableMemory();
-    return Math.round(r / (n.memoryUsage.rss() + r) * 100);
+function q() {
+    var r = e.availableMemory();
+    return Math.round(r / (e.memoryUsage.rss() + r) * 100);
+}
+
+async function* C(e, t = 3) {
+    var n = e.length, o = (n < t && (t = n), new Array(n));
+    for (let r = 0; r < t; ++r) {
+        var i = o[r] = {};
+        s(r, i);
+    }
+    for (let r = 0; r < n; ++r) {
+        var a = o[r % t], {
+            filePath: u,
+            bin: f
+        } = (a.bin || await a.promise, a), c = r + t;
+        c < n && s(c, a), yield {
+            filePath: u,
+            bin: f
+        };
+    }
+    async function s(r, t) {
+        var r = e[r], n = l.readFile(r);
+        Object.assign(t, {
+            filePath: r,
+            promise: n,
+            bin: void 0
+        }), t.bin = await n;
+    }
 }
 
 export * as default from "./QyUtils.js";
 
 export {
-    u as SpecialOperators,
-    d as calHash,
-    p as Hash_Length,
-    g as Hash_Key_Length,
-    W as pathSplit,
-    c as isMatchName,
-    l as getMatchParam,
-    x as isNumber,
-    M as isString,
-    N as isBoolean,
-    w as isFunction,
-    P as isNotNullObj,
-    B as isSimpleType,
-    $ as isEmptyObj,
-    h as getSubdirMapKey,
-    y as getFileMapKey,
-    S as getContentKey,
-    v as arrayLast,
-    b as getRandomStr,
+    a as __dirname,
+    f as SpecialOperators,
+    c as SpecialFilePaths,
+    s as isMatchName,
+    d as getMatchParam,
     m as getSizeStr,
-    F as setPromise,
-    j as trimArrayTail,
-    A as toBuffer,
-    H as getSuffix,
-    L as sleep,
-    O as ensureDir,
-    T as ensureParentDir,
-    k as getSize,
-    U as lockExclusiveFilePath,
-    I as unlockExclusiveFilePath,
-    K as folderOrFileExists,
-    f as SpecialFilePaths,
-    _ as fromSingleName,
-    R as toSingleName,
-    G as randomInt,
-    z as propNameSplit,
-    J as propNameJoin,
-    C as listToMap,
-    Q as readBufferAsync,
-    X as memoryPercent,
-    s as __dirname
+    p as calHash,
+    h as Hash_Key_Length,
+    g as getSubdirMapKey,
+    y as getFileMapKey,
+    v as getContentKey,
+    b as getRandomStr,
+    $ as arrayLast,
+    w as isEmptyObj,
+    P as isNotNullObj,
+    S as isString,
+    j as isNumber,
+    x as isBoolean,
+    B as isFunction,
+    M as isSimpleType,
+    O as trimArrayTail,
+    T as setPromise,
+    k as toBuffer,
+    A as getSuffix,
+    D as ensureDir,
+    F as ensureParentDir,
+    I as getSize,
+    W as folderOrFileExists,
+    E as sleep,
+    L as lockExclusiveFilePath,
+    U as unlockExclusiveFilePath,
+    R as fromSingleName,
+    G as toSingleName,
+    H as pathSplit,
+    J as propNameSplit,
+    Q as propNameJoin,
+    z as randomInt,
+    K as listToMap,
+    X as readBufferAsync,
+    q as memoryPercent,
+    C as loadFileList
 };

@@ -3,37 +3,18 @@ import {
 } from "./QyCD.js";
 
 class e extends r {
+    stack = [];
     constructor(r) {
-        super(r), Object.assign(this, {
-            stack: []
-        });
-    }
-    dir(r, e) {
-        return u(this, super.dir(r, e));
-    }
-    indexDir(r, e, s) {
-        return u(this, super.indexDir(r, e, s));
-    }
-    file(r, e) {
-        return u(this, super.file(r, e));
-    }
-    view(r, e, s) {
-        return u(this, super.view(r, e, s));
-    }
-    queryFiles(r, e, s, t, i) {
-        return u(this, super.queryFiles(r, e, s, t, i));
-    }
-    queryFilesMulti(r, e, s, t) {
-        return u(this, super.queryFilesMulti(r, e, s, t));
+        super(r);
+        for (let s of [ "dir", "indexDir", "file", "view", "triggerFile", "triggerFiles", "rpcFile", "rpcFiles", "queryFiles", "queryFilesMulti", "queryTree", "queryTreeMulti" ]) this[s] = (...r) => {
+            return e = this, r = super[s].apply(this, r), e.stack.push(r), e;
+            var e;
+        };
     }
     run() {
         var r = this.stack;
         return this.stack = [], this.resetCurrentDir(), r;
     }
-}
-
-function u(r, e) {
-    return r.stack.push(e), r;
 }
 
 export {

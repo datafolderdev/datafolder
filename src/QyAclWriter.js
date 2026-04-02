@@ -7,20 +7,21 @@ import {
 } from "./QyAcl.js";
 
 import {
-    getDefaultOptions as s
+    getDefaultOptions as o
 } from "./QyDefaultOptions.js";
 
 class t extends r {
-    constructor(r, t) {
+    qyAclCmdGenerator;
+    constructor(r, t = void 0) {
         super({
-            ...s("QyAclWriter"),
+            ...o("QyAclWriter"),
             ...r
         }, t), this.qyAclCmdGenerator = new e();
     }
-    _getBinData(r, t) {
-        var e, s = this.qyAclCmdGenerator;
-        for (e of r) s.pushCmdArgAsListObj(e);
-        return s.toAclBuffer(t);
+    getBinData(r, t) {
+        var e, o = this.qyAclCmdGenerator;
+        for (e of r) o.pushCmdArgAsListObj(e);
+        return o.toAclBuffer(t);
     }
 }
 

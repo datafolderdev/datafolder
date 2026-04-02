@@ -18,38 +18,38 @@ import {
 } from "./QyUtils.js";
 
 import {
-    runQueries as l
+    logger as l
+} from "./QyLogger.js";
+
+import {
+    runQueries as c
 } from "../scripts/airbnb2_queries.js";
 
-logger.level = "info";
+l.level = "info";
 
-let r = "../airbnb", c = "./tmp/simulate", m, p, f, v, d, g;
+let r = "../airbnb", m = "./tmp/simulate", p, f, v, d, g, y;
 
-async function y(e) {
+async function b(e) {
     return JSON.parse(await s(t(r, e)));
 }
 
-function b(e) {
+function h(e) {
     console.time("insertData");
     var t, s, r, o = e.batch;
-    for (t of v) o.insert([ "hosts", t ], m[t]);
-    for (s of d) {
-        var i = p[s], {
+    for (t of d) o.insert([ "hosts", t ], p[t]);
+    for (s of g) {
+        var i = f[s], {
             property_type: a,
             room_type: n,
             bed_type: l
         } = i;
         o.insert([ "airbnb", a, n, l, s ], i);
     }
-    for (r of g) {
-        var c = f[r];
+    for (r of y) {
+        var c = v[r];
         o.insert([ "reviews", c.listing_id, r ], c);
     }
     o.run(), console.timeEnd("insertData");
-}
-
-function h() {
-    return m[v[u(v.length)]];
 }
 
 function _() {
@@ -60,19 +60,23 @@ function j() {
     return f[g[u(g.length)]];
 }
 
-async function D(e, t) {
+function D() {
+    return v[y[u(y.length)]];
+}
+
+async function E(e, t) {
     for (;0 < t--; ) {
         switch (u(3)) {
           case 0:
             s = a = i = o = r = void 0;
-            var s, r = e, o = h(), i = h(), a = {};
+            var s, r = e, o = _(), i = _(), a = {};
             for (s in i) 1 == u(2) && (a[s] = i[s]);
             r.insert([ "hosts", o.host_id ], a);
             break;
 
           case 1:
             n = f = p = m = c = l = o = r = void 0;
-            var n, r = e, o = _(), l = _(), c = {};
+            var n, r = e, o = j(), l = j(), c = {};
             for (n in l) 1 == u(2) && (c[n] = l[n]);
             var {
                 property_type: o,
@@ -85,7 +89,7 @@ async function D(e, t) {
 
           case 2:
             v = g = d = p = m = void 0;
-            var v, m = e, p = j(), d = j(), g = {};
+            var v, m = e, p = D(), d = D(), g = {};
             for (v in d) 1 == u(2) && (g[v] = d[v]);
             m.insert([ "reviews", p.listing_id, p._id ], g);
         }
@@ -95,25 +99,24 @@ async function D(e, t) {
 
 (async () => {
     console.time("total");
-    let t = process.argv[2] || 1e3, s = process.argv[3] || 100, e;
+    let t = +(process.argv[2] || 1e3), s = +(process.argv[3] || 100), e;
     if ("true" == process.argv[4]) {
         try {
-            await i(c, {
+            await i(m, {
                 recursive: !0
             });
         } catch (e) {}
         e = !0;
-    } else await n(c) || (e = !0);
-    process.argv[5] && (logger.level = process.argv[5]), console.time("loadData"), 
-    [ m, p, f ] = await Promise.all([ y("hosts.json"), y("listings.json"), y("reviews.json") ]), 
-    v = Object.keys(m), d = Object.keys(p), g = Object.keys(f), await !console.timeEnd("loadData"), 
-    console.log(`hosts:${v.length}, listings:${d.length}, reviews:` + g.length);
-    var r = new a(c, {
+    } else await n(m) || (e = !0);
+    process.argv[5] && (l.level = process.argv[5]), console.time("loadData"), [ p, f, v ] = await Promise.all([ b("hosts.json"), b("listings.json"), b("reviews.json") ]), 
+    d = Object.keys(p), g = Object.keys(f), y = Object.keys(v), await !console.timeEnd("loadData"), 
+    console.log(`hosts:${d.length}, listings:${g.length}, reviews:` + y.length);
+    var r = new a(m, {
         fileLogLevel: "basic"
-    }), o = (e && (await r.start(), b(r), await r.stop()), console.time("simulate " + s), 
-    await r.start(), l(r), []);
-    for (let e = 0; e < t; ++e) o.push(D(r, s));
-    await Promise.all(o), b(r), await r.stop(), console.timeEnd("simulate " + s), 
-    console.time("start"), await r.start(), console.timeEnd("start"), l(r), await r.stop(), 
+    }), o = (e && (await r.start(), h(r), await r.stop()), console.time("simulate " + s), 
+    await r.start(), c(r), []);
+    for (let e = 0; e < t; ++e) o.push(E(r, s));
+    await Promise.all(o), h(r), await r.stop(), console.timeEnd("simulate " + s), 
+    console.time("start"), await r.start(), console.timeEnd("start"), c(r), await r.stop(), 
     console.timeEnd("total");
 })();

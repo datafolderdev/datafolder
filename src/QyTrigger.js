@@ -12,18 +12,24 @@ import {
     isMatchName as l,
     getMatchParam as d,
     arrayLast as f,
-    propNameJoin as N
+    propNameJoin as v
 } from "./QyUtils.js";
 
-let v = Array.isArray;
+import {
+    logger as N
+} from "./QyLogger.js";
+
+let y = Array.isArray;
 
 class h {
-    constructor(e, r) {
+    name;
+    parent;
+    children = {};
+    triggerMap = {};
+    constructor(e = void 0, r = void 0) {
         Object.assign(this, {
             name: e,
-            parent: r,
-            children: {},
-            triggerMap: {}
+            parent: r
         });
     }
     insertTrigger(e, r, t, a) {
@@ -69,6 +75,10 @@ class h {
 }
 
 class m {
+    triggerName;
+    fileNamePath;
+    propNamePathList;
+    fun;
     constructor(e, r, t, a) {
         Object.assign(this, {
             triggerName: e,
@@ -90,10 +100,10 @@ class m {
             p(l, f) || (l = {
                 oldValue: l,
                 newValue: f
-            }, (v(f) || v(c(n, t))) && (l.isArrayDelta = !0), (g = g || {
+            }, (y(f) || y(c(n, t))) && (l.isArrayDelta = !0), (g = g || {
                 _file: e,
                 _fileContent: n
-            })[N(t)] = l, u(g, t, l));
+            })[v(t)] = l, u(g, t, l));
         }
         if (g) {
             var {
@@ -107,7 +117,7 @@ class m {
             try {
                 o && o(g), s.emit(a, g);
             } catch (e) {
-                logger.error(`Running trigger ${a} failed:`, g, e);
+                N.error(`Running trigger ${a} failed:`, g, e);
             }
         }
     }
@@ -115,7 +125,7 @@ class m {
 
 let t = [];
 
-function y(e, r) {
+function P(e, r) {
     return e ? l(r) ? Object.values(e) : (e = e[r]) ? [ e ] : t : t;
 }
 
@@ -124,13 +134,13 @@ function r(e, a) {
         let r = [ e ], t = [];
         for (let e = 0; e < a.length - 1; ++e) {
             var i, s = a[e];
-            for (i of r) for (var o of y(i.subdirMap, s)) i.setChildTriggerNodes(o), 
+            for (i of r) for (var o of P(i.subdirMap, s)) i.setChildTriggerNodes(o), 
             t.push(o);
             if (0 == t.length) return;
             [ r, t ] = [ t, r ], t.length = 0;
         }
         var n, g = f(a);
-        for (n of r) for (var l of y(n.fileMap, g)) n.setChildTriggerNodes(l);
+        for (n of r) for (var l of P(n.fileMap, g)) n.setChildTriggerNodes(l);
     }
 }
 

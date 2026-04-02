@@ -1,37 +1,37 @@
-import DataFolder from "datafolder";
+import DataFolder, { logger } from "datafolder";
 const dataFolder = new DataFolder();
 
 run();
 
 async function run() {
 	await dataFolder.start();
-	dataFolder.insert("users/2026/user_0001", {
+	dataFolder.insert("traindata/2026/1/20/chat_0001", {
 		userid: "user_0001",
 		email: "a@b.com",
-		password: "123",
-		score: 5,
+		feedbackScore: 5,
 		address: { city: "a", zipcode: 123 },
 	});
-	dataFolder.insert("users/2026/user_0002", {
-		userid: "user_0002",
-		email: "c@b.com",
-		password: "333",
-		score: 3,
-		address: { city: "b", zipcode: 321 },
-	});
-	const { email, password, address, score } = dataFolder.view("users/2026/user_0002");
-	logger.log(email, password, score, address);
+	dataFolder.insert("traindata/2026/1/20/chat_0001/prompt", "What is async/await?");
+	dataFolder.insert("traindata/2026/1/20/chat_0001/answer", "async/await is ...");
+	const { userid, email, address, feedbackScore } = dataFolder.view("traindata/2026/1/20/chat_0001");
+	logger.log(userid, email, feedbackScore, address);
 	address.zipcode = 678;
-	dataFolder.insert("users/2026/user_0002", { score: score + 1, address });
-	logger.log(dataFolder.view("users/2026/user_0002", ["score", "address"]));
+	dataFolder.insert("traindata/2026/1/20/chat_0001", { feedbackScore: feedbackScore + 1, address });
+	logger.log(dataFolder.view("traindata/2026/1/20/chat_0001", ["feedbackScore", "address"]));
+	logger.debug(dataFolder.view("traindata/2026/1/20/chat_0001/prompt"));
+	logger.warn(dataFolder.view("traindata/2026/1/20/chat_0001/answer"));
 	await dataFolder.stop();
 	await dataFolder.start();
 	{
-		const file = dataFolder.file("users/2026/user_0002");
-		const { email, password, score } = file.view();
-		logger.log(email, password, score);
-		dataFolder.insert(file, { score: score + 1 });
-		logger.log(file.view());
+		const file = dataFolder.file("traindata/2026/1/20/chat_0001");
+		const { email, feedbackScore } = file.view();
+		logger.log(email, feedbackScore);
+		dataFolder.insert(file, { feedbackScore: feedbackScore + 1 });
+		logger.error(
+			file.view(),
+			dataFolder.view("traindata/2026/1/20/chat_0001/prompt"),
+			dataFolder.view("traindata/2026/1/20/chat_0001/answer"),
+		);
 	}
 	await dataFolder.stop();
 }

@@ -1,9 +1,9 @@
-module.exports = code => {
+module.exports = r => {
     try {
-        return eval(code);
-    } catch (exception) {
+        return new Function("dataFolder", `return (${r})();`)(dataFolder);
+    } catch (r) {
         return {
-            error: exception.message
+            error: r.message
         };
     }
 };

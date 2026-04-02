@@ -44,13 +44,16 @@ let t = {
     QySnapshots: {
         pMOutdatedPercent: 30,
         minSnapshotKeyCount: 3e3,
-        compressValText: !0
+        minLenToCompress: 4e3
     },
     QyKVDataCleaner_Worker: {
         compressRedundantFile: !1
     },
     QySnapshotSaver_Worker: {
         maxInMemSnapshotCount: 3
+    },
+    QyKVDataSaver_Worker: {
+        noAcl: !1
     }
 };
 

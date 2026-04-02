@@ -1,7 +1,7 @@
-import s from "node:events";
+import t from "node:events";
 
 import {
-    setPromise as t
+    setPromise as s
 } from "./QyUtils.js";
 
 import {
@@ -13,19 +13,19 @@ import {
 } from "./QyDefaultOptions.js";
 
 import {
-    QyQueue as n
+    QyQueue as r
 } from "./QyQueue.js";
 
-class e extends s {
-    constructor(s, t = [], e = []) {
-        super(), s = {
+class e extends t {
+    running = !1;
+    opQueue;
+    options;
+    runningOp;
+    constructor(t, s = [], e = []) {
+        super(), t = this.options = {
             ...i("QyOpRunner"),
-            ...s
-        }, Object.assign(this, {
-            options: s,
-            running: !1,
-            opQueue: new n(s)
-        }), r(this, t, !0), r(this, e);
+            ...t
+        }, this.opQueue = new r(t), n(this, s, !0), n(this, e), n(this, [ "start", "stop" ], !0);
     }
     get firstOp() {
         return this.opQueue.first;
@@ -36,52 +36,55 @@ class e extends s {
     finish() {
         return this.lastOp?.promise || this.runningOp?.promise;
     }
-    pushAndRunWithPromise(s) {
-        return t(s), this.pushAndRun(s), s.promise;
+    pushAndRunWithPromise(t) {
+        return s(t), this.pushAndRun(t), t.promise;
     }
-    pushAndRun(...s) {
-        var t = this.opQueue, e = this.lastOp;
-        "_op_stop" === e?.opFunName ? (t.pop(), t.push(...s, e)) : t.push(...s), 
+    pushAndRun(...t) {
+        var s = this.opQueue, e = this.lastOp;
+        "_op_stop" === e?.opFunName ? (s.pop(), s.push(...t, e)) : s.push(...t), 
         this.run();
     }
     async run() {
         if (!this.running) {
             this.running = !0;
-            for (var s = this.opQueue; !s.isEmpty; ) {
-                var t = s.shift(), {
+            for (var t = this.opQueue; !t.isEmpty; ) {
+                var s = t.shift(), {
                     opFunName: e,
                     eventName: i,
-                    resolve: n,
-                    args: r
-                } = t;
+                    resolve: r,
+                    args: n
+                } = s;
                 if (e) {
-                    this.runningOp = t;
+                    this.runningOp = s;
                     try {
-                        var o = await (r ? this[e](...r) : this[e]());
-                        n && n(o), i && this.emit(i, o);
-                    } catch (s) {
-                        u.error(`Run ${e} failed:`, s), i && this.emit(i, s);
+                        var o = await (n ? this[e](...n) : this[e]());
+                        r && r(o), i && this.emit(i, o);
+                    } catch (t) {
+                        u.error(`Run ${e} failed:`, t), i && this.emit(i, t);
                     }
                     this.runningOp = void 0;
-                } else n && n(), i && this.emit(i);
+                } else r && r(), i && this.emit(i);
             }
             this.running = !1;
         }
     }
 }
 
-function r(i, s, n) {
-    for (let e of s) {
-        let t = "_op_" + e;
-        i[e] || (i[e] = n ? (...s) => i.pushAndRunWithPromise({
+function n(i, t, r = !1) {
+    for (let e of t) {
+        let s = "_op_" + e;
+        if (i[e] || (i[e] = r ? (...t) => i.pushAndRunWithPromise({
             opName: e,
-            opFunName: t,
-            args: s
-        }) : (...s) => i.pushAndRun({
+            opFunName: s,
+            args: t
+        }) : (...t) => i.pushAndRun({
             opName: e,
-            opFunName: t,
-            args: s
-        })), i[t] || (i[t] = () => u.error(`Class method ${t} not implemented.`));
+            opFunName: s,
+            args: t
+        })), !i[s]) {
+            let t = i.constructor.name + " not implemented " + s;
+            i[s] = () => u.error(t), u.error(t);
+        }
     }
 }
 

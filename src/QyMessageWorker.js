@@ -1,5 +1,5 @@
 import {
-    parentPort as t
+    parentPort as o
 } from "node:worker_threads";
 
 import {
@@ -15,11 +15,11 @@ import {
 } from "./QyOpRunner.js";
 
 class e extends s {
-    constructor(s, e, r) {
+    constructor(s, e = [], r = []) {
         super(s = {
             ...a("QyMessageWorker"),
             ...s
-        }, e, r), t.on("message", async s => {
+        }, e, r), o?.on("message", async s => {
             var {
                 opName: e,
                 _cast: r
@@ -27,13 +27,13 @@ class e extends s {
             if (e) {
                 var a = s.args || [];
                 try {
-                    var o = await this[e](...a);
-                    r || t.postMessage({
+                    var t = await this[e](...a);
+                    r || o?.postMessage({
                         ack: e,
-                        result: o
+                        result: t
                     }), "stop" == e && process.exit();
                 } catch (s) {
-                    n.error(`Running ${e} failed:`, s), r || t.postMessage({
+                    n.error(`Running ${e} failed:`, s), r || o?.postMessage({
                         ack: e,
                         exception: s
                     });
@@ -42,7 +42,7 @@ class e extends s {
         });
     }
     castParent(s, ...e) {
-        t.postMessage({
+        o?.postMessage({
             opName: s,
             args: e,
             _cast: !0

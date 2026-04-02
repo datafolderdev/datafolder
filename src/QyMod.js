@@ -1,16 +1,17 @@
-import m from "node:module";
+import d from "node:module";
 
 import {
-    logger as a
+    logger as s
 } from "./QyLogger.js";
 
-function o(r, e, i, o) {
-    if (i) try {
-        var t = r + "_" + e, d = `_${t}_qydb`, l = (globalThis[d] = o, new m(e));
-        return l._compile(`(function(qyDB){${i}})(${d});`, t + ".js"), delete globalThis[d], 
-        l.exports;
+function o(e, r, l, o) {
+    if (l) try {
+        var t = e + "_" + r, g = `_${t}_qydb`, i = `_${t}_logger`, a = (globalThis[g] = o, 
+        globalThis[i] = s, new d(r));
+        return a._compile(`(function(dataFolder, logger){${l}})(${g},${i});`, t + ".ts"), 
+        delete globalThis[g], delete globalThis[i], a.exports;
     } catch (o) {
-        a.error("requireFromModCode failed:", r, e, i, o);
+        s.error("requireFromModCode failed:", e, r, l, o);
     }
 }
 

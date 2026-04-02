@@ -1,87 +1,131 @@
-import r from "node:fs";
+import o from "node:fs";
 
-import n from "node:path";
+import r from "node:path";
 
 import {
-    Console as t
+    Console as i
 } from "node:console";
 
 import {
-    isMainThread as e,
-    threadId as o
+    parentPort as n,
+    isMainThread as l,
+    threadId as e
 } from "node:worker_threads";
 
-let i = e ? "" : `W${o}:`, s = {
-    Info: 0,
-    Debug: 1,
-    Warn: 2,
-    Error: 3,
-    None: 4
-}, l = {
-    verbose: s.Info,
-    info: s.Info,
-    log: s.Debug,
-    debug: s.Debug,
-    warn: s.Warn,
-    error: s.Error,
-    none: s.None
-}, a = Object.fromEntries(Object.entries(l).map(([ e, o ]) => [ o, e ])), c = {
-    currentLogLevel: s.Debug,
-    info: function() {
-        c.currentLogLevel == s.Info && b("info", arguments);
-    },
-    log: function() {
-        c.currentLogLevel <= s.Debug && b("log", arguments);
-    },
-    debug: function() {
-        c.currentLogLevel <= s.Debug && b("debug", arguments);
-    },
-    warn: function() {
-        c.currentLogLevel <= s.Warn && b("warn", arguments);
-    },
-    error: function() {
-        c.currentLogLevel <= s.Error && b("error", arguments);
-    }
-}, u, g, f;
+import {
+    Writable as t
+} from "node:stream";
 
-function d() {
-    u = void 0, g && (g.close(), g = void 0), f && (f.close(), f = void 0);
+let a = l ? "" : `W${e}:`, d = {
+    info: 1,
+    debug: 2,
+    log: 3,
+    warn: 4,
+    error: 5,
+    none: 6
+}, s = Object.fromEntries(Object.entries(d).map(([ e, t ]) => [ t, e ]));
+
+class h {
+    _level = d.debug;
+    fileConsole;
+    stdout;
+    stderr;
+    constructor() {
+        var e, t;
+        l || (e = this.stdout = p("%o_"), t = this.stderr = p("%e_"), this.fileConsole = new i({
+            stdout: e,
+            stderr: t,
+            inspectOptions: {
+                depth: 3,
+                colors: !1
+            }
+        }));
+    }
+    get level() {
+        return s[this._level];
+    }
+    set level(e) {
+        this._level = d[e];
+    }
+    info(...e) {
+        c(this, "info", e);
+    }
+    log(...e) {
+        c(this, "log", e);
+    }
+    debug(...e) {
+        c(this, "debug", e);
+    }
+    warn(...e) {
+        c(this, "warn", e);
+    }
+    error(...e) {
+        c(this, "error", e);
+    }
+    handleOutMsg(e) {
+        l ? u(this.stdout, e) : n?.postMessage(e);
+    }
+    handleErrMsg(e) {
+        l ? u(this.stderr, e) : n?.postMessage(e);
+    }
+    closeFileConsole() {
+        l && (this.fileConsole = void 0, this.stdout && (this.stdout.close(), this.stdout = void 0), 
+        this.stderr) && (this.stderr.close(), this.stderr = void 0);
+    }
+    setFileConsoleDateDirPath(e, t = !1) {
+        var s;
+        l && (this.closeFileConsole(), t = {
+            flags: t ? "w" : "a",
+            flush: !0,
+            autoClose: !1
+        }, s = this.stdout = o.createWriteStream(r.join(e, "stdout.txt"), t), e = this.stderr = o.createWriteStream(r.join(e, "stderr.txt"), t), 
+        this.fileConsole = new i({
+            stdout: s,
+            stderr: e,
+            inspectOptions: {
+                depth: 3,
+                colors: !1
+            }
+        }));
+    }
 }
 
-function L(e, o) {
-    d();
-    o = {
-        flags: o ? "w" : "a",
-        flush: !0,
-        autoClose: !1
-    };
-    g = r.createWriteStream(n.join(e, "stdout.txt"), o), f = r.createWriteStream(n.join(e, "stderr.txt"), o), 
-    u = new t({
-        stdout: g,
-        stderr: f,
-        inspectOptions: {
-            depth: 3,
-            colors: !1
+function u(e, t) {
+    var s, o;
+    e && ({
+        chunks: t,
+        chunk: s,
+        encoding: o
+    } = t, t ? e.writev(t) : e.write(s, o));
+}
+
+function c(e, t, s) {
+    var o;
+    e._level <= d[t] && (o = ((o = (o = new Error().stack?.split("\n")) && /([^/\\()]+)\)?$/.exec(o[3] ?? "")) && o[1]) ?? "", 
+    o = `${new Date().toISOString()} ${a}${o}:${t}:`, console[t](o, ...s), e.fileConsole) && e.fileConsole[t](o, ...s);
+}
+
+function p(o) {
+    return new t({
+        write(e, t, s) {
+            return n?.postMessage({
+                opName: o,
+                chunk: e,
+                encoding: t
+            }), s && s(), !0;
+        },
+        writev(e, t) {
+            return n?.postMessage({
+                opName: o,
+                chunks: e
+            }), t && t(), !0;
         }
     });
 }
 
-function b(e, o) {
-    var r = new Error().stack.split("\n"), r = `${new Date().toISOString()} ${i}${/([^/\\()]+)\)?$/.exec(r[3])[1]}:${e}:`;
-    console[e](r, ...o), u && u[e](r, ...o);
-}
-
-Object.defineProperty(c, "level", {
-    get() {
-        return a[c.currentLogLevel];
-    },
-    set(e) {
-        c.currentLogLevel = l[e];
-    }
-}), globalThis.logger = c;
+var f = new h();
 
 export {
-    c as logger,
-    L as setFileConsoleDateDirPath,
-    d as closeFileConsole
+    a as ThreadMark,
+    f as logger
 };

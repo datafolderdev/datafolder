@@ -3,59 +3,53 @@ import {
     SpecialFilePaths as t
 } from "./QyUtils.js";
 
-let s = t.HiddenFolderName;
+let i = t.HiddenFolderName;
 
 class e {
-    constructor(t, e, a) {
-        t = t.toString(), Object.assign(this, {
-            name: t,
-            parentDir: a,
-            flagInt: 0
-        }), this._created = e, a && (a.name == s || a.underHiddenFolder) && (this.flagInt |= 2);
-    }
-    _getFlag(t) {
-        return 0 != (this.flagInt & t);
-    }
-    _setFlag(t, e) {
-        e ? this.flagInt |= t : this.flagInt &= ~t;
+    name;
+    parentDir;
+    flagInt;
+    constructor(t, e = !1, a) {
+        this.name = t.toString(), this.parentDir = a, this.flagInt = 0, this._created = e, 
+        a && (a.name == i || a.underHiddenFolder) && (this.flagInt |= 2);
     }
     get qyCache() {
         var t = this.parentDir;
         return t ? t.qyCache : this._qyCache;
     }
     get _created() {
-        return this._getFlag(1);
+        return r(this, 1);
     }
     set _created(t) {
-        this._setFlag(1, t);
+        n(this, 1, t);
     }
     get subdirMapLoaded() {
-        return this._getFlag(4);
+        return r(this, 4);
     }
     set subdirMapLoaded(t) {
-        return this._setFlag(4, t);
+        n(this, 4, t);
     }
     get fileMapLoaded() {
-        return this._getFlag(8);
+        return r(this, 8);
     }
     set fileMapLoaded(t) {
-        this._setFlag(8, t);
+        n(this, 8, t);
     }
     get fileContentLoaded() {
-        return this._getFlag(16);
+        return r(this, 16);
     }
     set fileContentLoaded(t) {
-        this._setFlag(16, t);
+        n(this, 16, t);
     }
     get visited() {
-        return this._getFlag(32);
+        return r(this, 32);
     }
     set visited(t) {
-        this._setFlag(32, t);
+        n(this, 32, t);
     }
     get nameNum() {
-        var t;
-        return this._nameNum || (t = +this.name, this._nameNum = isNaN(t) ? this.name : t);
+        var t = this._nameNum;
+        return null != t ? t : (t = +this.name, this._nameNum = isNaN(t) ? this.name : t);
     }
     cmp({
         nameNum: t
@@ -81,14 +75,16 @@ class e {
         return !0;
     }
     get underHiddenFolder() {
-        return 2 & this.flagInt;
+        return r(this, 2);
     }
     get parentList() {
         if (null == this._parentList) {
             var e = this._parentList = [];
             let t = this.parentDir;
-            for (;t.parentDir; ) e.push(t), t = t.parentDir;
-            e.reverse();
+            if (null != t) {
+                for (;t.parentDir; ) e.push(t), t = t.parentDir;
+                e.reverse();
+            }
         }
         return this._parentList;
     }
@@ -100,6 +96,14 @@ class e {
         return null == this._namePath && (this._namePath = [ ...this.parentNamePath, this.name ]), 
         this._namePath;
     }
+}
+
+function r(t, e) {
+    return 0 != (t.flagInt & e);
+}
+
+function n(t, e, a) {
+    a ? t.flagInt |= e : t.flagInt &= ~e;
 }
 
 export {

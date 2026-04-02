@@ -1,15 +1,15 @@
 import {
-    QyMessager as a
+    QyMessager as e
 } from "./QyMessager.js";
 
 import {
     getDefaultOptions as r
 } from "./QyDefaultOptions.js";
 
-class e extends a {
-    constructor(a, e, s) {
-        super(a, "QyKVDataSaver_Worker.js", {
-            kvFolder: e,
+class a extends e {
+    constructor(e, a, s) {
+        super(e, "QyKVDataSaver_Worker", {
+            kvFolder: a,
             options: s = {
                 ...r("QyKVDataSaver"),
                 ...s
@@ -19,5 +19,5 @@ class e extends a {
 }
 
 export {
-    e as QyKVDataSaver
+    a as QyKVDataSaver
 };

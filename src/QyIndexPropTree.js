@@ -1,7 +1,12 @@
 let t = Array.isArray;
 
-class i {
-    constructor(e, t) {
+class o {
+    name;
+    parent;
+    children;
+    childCount;
+    indexPropPath;
+    constructor(e = void 0, t = void 0) {
         Object.assign(this, {
             name: e,
             parent: t,
@@ -9,52 +14,56 @@ class i {
         });
     }
     insert(e, t) {
-        var r = this.children;
+        var n = this.children;
         if (t == e.length) return !this.indexPropPath && (this.indexPropPath = e, 
         !0);
-        var n = e[t];
+        var r = e[t];
         let h;
-        return r ? (h = r[n]) || (h = r[n] = new i(n, this), ++this.childCount) : (h = new i(n, this), 
+        return n ? (h = n[r]) || (h = n[r] = new o(r, this), ++this.childCount) : (h = new o(r, this), 
         this.children = {
-            [n]: h
+            [r]: h
         }, ++this.childCount), h.insert(e, t + 1);
     }
-    remove(e, t = 0, r = {}) {
+    remove(e, t = 0, n = {}) {
         var {
-            parent: n,
+            parent: r,
             name: h,
-            children: i
+            children: o
         } = this;
-        if (t == e.length) return this.indexPropPath && (r.removed = !0, delete this.indexPropPath), 
-        n && o(this) && function e(t, r) {
+        if (t == e.length) return this.indexPropPath && (n.removed = !0, delete this.indexPropPath), 
+        r && i(this) && function e(t, n) {
             let {
-                children: n,
+                children: r,
                 parent: h,
-                name: i
+                name: o
             } = t;
-            n[r] && (delete n[r], 0 == --t.childCount && delete t.children, h) && o(t) && e(h, i);
-        }(n, h), r;
-        this.indexPropPath && (r.hasPrefix = !0);
-        n = i && i[e[t]];
-        return n ? n.remove(e, t + 1, r) : r;
+            r[n] && (delete r[n], 0 == --t.childCount && delete t.children, h) && i(t) && e(h, o);
+        }(r, h), n;
+        this.indexPropPath && (n.hasPrefix = !0);
+        r = o && o[e[t]];
+        return r ? r.remove(e, t + 1, n) : n;
     }
     getAllIndexPropPaths(e) {
         var {
             children: t,
-            indexPropPath: r
+            indexPropPath: n
         } = this;
-        if (r) e.push(r); else for (var n in t) t[n].getAllIndexPropPaths(e);
+        if (n) e.push(n); else for (var r in t) t[r].getAllIndexPropPaths(e);
     }
 }
 
-function o(e) {
+function i(e) {
     return !e.indexPropPath && 0 == e.childCount;
 }
 
-class n {
+class r {
+    rootNode;
+    changeCount;
+    allIndexPropPaths;
+    _cachedChangeCount;
     constructor() {
         Object.assign(this, {
-            rootNode: new i(),
+            rootNode: new o(),
             changeCount: 0,
             allIndexPropPaths: []
         });
@@ -71,22 +80,22 @@ class n {
         var {
             _cachedChangeCount: e,
             allIndexPropPaths: t,
-            rootNode: r,
-            changeCount: n
+            rootNode: n,
+            changeCount: r
         } = this;
-        return e != n && (t.length = 0, r.getAllIndexPropPaths(t), this._cachedChangeCount = n), 
+        return e != r && (t.length = 0, n.getAllIndexPropPaths(t), this._cachedChangeCount = r), 
         t;
     }
 }
 
 function e(e) {
     if (0 == e.length) return [];
-    var t, r = new n();
-    for (t of e) r.insert(t);
-    return r.getAllIndexPropPaths();
+    var t, n = new r();
+    for (t of e) n.insert(t);
+    return n.getAllIndexPropPaths();
 }
 
 export {
-    n as QyIndexPropTree,
+    r as QyIndexPropTree,
     e as getPrefixPropPaths
 };

@@ -4,7 +4,7 @@ import {
 } from "node:fs/promises";
 
 import {
-    join as o
+    join as t
 } from "node:path";
 
 import {
@@ -12,7 +12,7 @@ import {
 } from "./QyUtils.js";
 
 import {
-    readAclBuffer as M
+    readAclBuffer as F
 } from "./QyAcl.js";
 
 import {
@@ -20,24 +20,30 @@ import {
 } from "./QySnapshots.js";
 
 import {
-    getDefaultOptions as r
+    getDefaultOptions as l
 } from "./QyDefaultOptions.js";
 
 class a {
+    options;
+    kvFolder;
+    aclFolder;
+    snapshotFolder;
+    qySnapshots;
+    loadedMaxAclNum = 0;
+    aclKeyValueMap = {};
+    maxChangeId = 0;
     constructor(a, s) {
         s = {
-            ...r("QyKVDataLoader"),
+            ...l("QyKVDataLoader"),
             ...s
         };
-        var t = o(a, "snapshot");
+        var o = t(a, "snapshot");
         Object.assign(this, {
             kvFolder: a,
             options: s,
-            aclFolder: o(a, "acl"),
-            snapshotFolder: t,
-            loadedMaxAclNum: 0,
-            aclKeyValueMap: {},
-            qySnapshots: new e(t, s)
+            aclFolder: t(a, "acl"),
+            snapshotFolder: o,
+            qySnapshots: new e(o, s)
         });
     }
     async load() {
@@ -45,19 +51,19 @@ class a {
             if (a = a.aclFolder, await g(a)) return (await x(a)).filter(a => /^[1-9]/.test(a)).map(a => parseInt(a));
         })(this), a.loadSnapshotInfos() ]);
         let {
-            maxSnapshotNum: t,
-            snapshotMaxChangeId: o
+            maxSnapshotNum: o,
+            snapshotMaxChangeId: t
         } = a;
-        if (this.maxChangeId = o, s) {
-            var e = this, r = s.filter(a => a > t), {
-                aclKeyValueMap: l,
-                qySnapshots: i,
+        if (this.maxChangeId = t, s) {
+            var e = this, l = s.filter(a => a > o), {
+                aclKeyValueMap: r,
+                qySnapshots: n,
                 options: s
-            } = (r.sort((a, s) => a - s), e), n = s.autoRepairAclFile, p = await Promise.all(r.map(async a => u(F(e, a))));
-            for (let a = 0; a < r.length; ++a) {
-                var d = r[a], m = F(e, d), m = await M(m, p[a], n, e.maxChangeId);
+            } = (l.sort((a, s) => a - s), e), i = s.autoRepairAclFile, p = await Promise.all(l.map(async a => u(I(e, a))));
+            for (let a = 0; a < l.length; ++a) {
+                var d = l[a], m = I(e, d), m = await F(m, p[a], i, e.maxChangeId);
                 if (0 < m.length) {
-                    for (var [ h, c ] of m) i.applyCmdObj(c, l), e.maxChangeId = h;
+                    for (var [ h, c ] of m) n.applyCmdObj(c, r), e.maxChangeId = h;
                     e.loadedMaxAclNum = d;
                 }
             }
@@ -77,8 +83,8 @@ class a {
     }
 }
 
-function F(a, s) {
-    return o(a.aclFolder, s + "_acl.txt");
+function I(a, s) {
+    return t(a.aclFolder, s + "_acl.txt");
 }
 
 export {

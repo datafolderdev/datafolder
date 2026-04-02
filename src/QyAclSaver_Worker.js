@@ -6,7 +6,8 @@ import {
     QyAclWriter as s
 } from "./QyAclWriter.js";
 
-class r extends t {
+export default class extends t {
+    qyAclWriter;
     constructor(t) {
         super(t), Object.assign(this, {
             options: t,
@@ -15,10 +16,10 @@ class r extends t {
             })
         });
     }
-    async start(t) {
+    async _op_start(t) {
         await this.qyAclWriter.start(t);
     }
-    async stop() {
+    async _op_stop() {
         await this.qyAclWriter.stop();
     }
     switch(t) {
@@ -31,5 +32,3 @@ class r extends t {
         this.qyAclWriter.save(t, s);
     }
 }
-
-export default r;

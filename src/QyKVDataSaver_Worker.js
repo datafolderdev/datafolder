@@ -7,7 +7,7 @@ import {
 } from "./QyDefaultOptions.js";
 
 import {
-    QyAclSaver as n
+    QyAclSaver as o
 } from "./QyAclSaver.js";
 
 import {
@@ -15,14 +15,28 @@ import {
 } from "./QyMessageWorker.js";
 
 import {
-    QySnapshotSaver as o
+    QySnapshotSaver as n
 } from "./QySnapshotSaver.js";
 
 import {
     delCmdKey as m
 } from "./QyAcl.js";
 
-class s extends a {
+import {
+    logger as r
+} from "./QyLogger.js";
+
+export default class extends a {
+    kvFolder;
+    aclFolder;
+    qyAclSaver;
+    qySnapshotSaver;
+    isStopping;
+    currentAclNum;
+    maxChangeId;
+    snapshotMaxChangeId;
+    isSavingSnapshot;
+    saveSnapshotResolve;
     constructor({
         kvFolder: a,
         options: s
@@ -33,38 +47,38 @@ class s extends a {
         }), Object.assign(this, {
             kvFolder: a,
             aclFolder: t(a, "acl"),
-            qyAclSaver: new n(this, s),
-            qySnapshotSaver: new o(this, a, s)
+            qyAclSaver: s.noAcl ? void 0 : new o(this, s),
+            qySnapshotSaver: new n(this, a, s)
         });
     }
-    start(a, s, t, e) {
+    _op_start(a, s, t, e) {
         var {
-            qyAclSaver: n,
-            qySnapshotSaver: o
+            qyAclSaver: o,
+            qySnapshotSaver: n
         } = this;
         Object.assign(this, {
             maxChangeId: a,
             snapshotMaxChangeId: a,
             currentAclNum: (t || s) + 1
-        }), n.start(u(this)), o.start(a, t, e);
+        }), o && o.start(d(this)), n.start(a, t, e);
     }
-    async stop() {
+    async _op_stop() {
         var {
             qyAclSaver: a,
             options: s,
             qySnapshotSaver: t,
             currentAclNum: e,
-            maxChangeId: n,
-            snapshotMaxChangeId: o
+            maxChangeId: o,
+            snapshotMaxChangeId: n
         } = this;
-        this.isStopping = !0, await a.stop(), s.saveSnapshotAtStop && o < n && (this.isSavingSnapshot && await new Promise(a => this.saveSnapshotResolve = a), 
-        logger.log(`Saving snapshot ${e} at stop.`), t.saveSnapshot(e)), await t.stop();
+        return this.isStopping = !0, a && await a.stop(), s.saveSnapshotAtStop && n < o && (this.isSavingSnapshot && await new Promise(a => this.saveSnapshotResolve = a), 
+        r.log(`Saving snapshot ${e} at stop.`), t.saveSnapshot(e)), t.stop();
     }
     callSave(a, s, t) {
-        return r(this, a, s, t, !0);
+        return h(this, a, s, t, !0);
     }
     castSave(a, s, t) {
-        return r(this, a, s, t);
+        return h(this, a, s, t);
     }
     releaseSnapshot(a) {
         this.qySnapshotSaver.releaseSnapshot(a);
@@ -74,9 +88,9 @@ class s extends a {
     }
 }
 
-function r(a, s, t, e, n) {
+function h(a, s, t, e, o = !1) {
     var {
-        qyAclSaver: o,
+        qyAclSaver: n,
         qySnapshotSaver: r,
         options: h,
         snapshotMaxChangeId: i,
@@ -84,21 +98,19 @@ function r(a, s, t, e, n) {
         isSavingSnapshot: S
     } = a;
     let v;
-    n ? v = o.callSave(s, t) : o.castSave(s, t);
+    n && (o ? v = n.callSave(s, t) : n.castSave(s, t));
     var l = t, c = e;
     if (c) {
         var g = c.length;
         for (let a = 0; a < g; a += 2) m(l, c[a]);
     }
     return r.castSave(s, t, e), a.maxChangeId = s, !S && s - i >= h.snapshotMaxChangeCount && (++a.currentAclNum, 
-    o.switch(u(a)), r.saveSnapshot(p), Object.assign(a, {
+    n && n.switch(d(a)), r.saveSnapshot(p), Object.assign(a, {
         snapshotMaxChangeId: s,
         isSavingSnapshot: !0
     })), v;
 }
 
-function u(a) {
+function d(a) {
     return t(a.aclFolder, a.currentAclNum + "_acl.txt");
 }
-
-export default s;

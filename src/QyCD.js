@@ -1,58 +1,105 @@
 import {
-    isString as e,
+    isString as i,
     pathSplit as s
 } from "./QyUtils.js";
 
 class r {
+    qyCache;
+    currentDir;
     constructor(r) {
         this.qyCache = r;
     }
-    cd(r, i = this.currentDir) {
-        return e(r) && (r = s(r)), this.cdP(r, i);
+    cd(r, e = this.currentDir) {
+        return i(r) && (r = s(r)), this.cdP(r, e);
     }
-    cdP(r, i = this.currentDir) {
-        return this.currentDir = this.qyCache.getOrCreateDir(r, i), this;
+    cdP(r, e = this.currentDir) {
+        return this.currentDir = this.qyCache?.getOrCreateDir(r, e), this;
     }
-    dir(r, i = this.currentDir) {
-        return e(r) && (r = s(r)), this.dirP(r, i);
+    dir(r, e = this.currentDir) {
+        return i(r) && (r = s(r)), this.dirP(r, e);
     }
-    dirP(r, i = this.currentDir) {
-        return this.qyCache.getDir(r, i);
+    dirP(r, e = this.currentDir) {
+        return this.qyCache?.getDir(r, e);
     }
-    indexDir(r, i, t = this.currentDir) {
-        return e(r) && (r = s(r)), e(i) && (i = s(i)), this.indexDirP(r, i, t);
+    indexDir(r, e, t = this.currentDir) {
+        return i(r) && (r = s(r)), i(e) && (e = s(e)), this.indexDirP(r, e, t);
     }
-    indexDirP(r, i, t = this.currentDir) {
-        var e = this.qyCache, r = e.getDir(r, t);
+    indexDirP(r, e, t = this.currentDir) {
+        var i = this.qyCache, r = i?.getDir(r, t);
         if (r) {
-            t = e.getIndexDir(r);
-            if (t) return i && 0 != i.length ? e.getDir(i, t) : t;
+            t = i?.getIndexDir(r);
+            if (t) return e && 0 != e.length ? i?.getDir(e, t) : t;
         }
     }
-    file(r, i = this.currentDir) {
-        return e(r) && (r = s(r)), this.fileP(r, i);
+    file(r, e = this.currentDir) {
+        return i(r) && (r = s(r)), this.fileP(r, e);
     }
-    fileP(r, i = this.currentDir) {
-        return this.qyCache.getFile(r, i);
+    fileP(r, e = this.currentDir) {
+        return this.qyCache?.getFile(r, e);
     }
     triggerFile(r) {
         return this.qyCache.getTriggerFile(r);
     }
-    view(r, i, t = this.currentDir) {
-        return e(r) && (r = s(r)), this.viewP(r, i, t);
+    get triggerFileList() {
+        return this.qyCache.triggerFileList;
     }
-    viewP(r, i, t = this.currentDir) {
-        return this.qyCache.getFile(r, t)?.view(i);
+    rpcFile(r) {
+        return this.qyCache.getRpcFile(r);
     }
-    queryFiles(r, i, t, e, s = this.currentDir) {
-        return this.qyCache.queryFiles(r, i, t, e, s);
+    get rpcFileList() {
+        return this.qyCache.rpcFileList;
     }
-    queryFilesMulti(r, i, t, e = this.currentDir) {
-        return this.qyCache.queryFilesMulti(r, i, t, e);
+    view(r, e = void 0, t = this.currentDir) {
+        return i(r) && (r = s(r)), this.viewP(r, e, t);
+    }
+    viewP(r, e, t = this.currentDir) {
+        return this.qyCache.getFile(r, t)?.view(e);
+    }
+    queryFiles(r, e, t, i, s = this.currentDir) {
+        return this.qyCache.queryFiles(r, e, t, i, s);
+    }
+    queryFilesMulti(r, e, t, i = this.currentDir) {
+        return this.qyCache.queryFilesMulti(r, e, t, i);
+    }
+    queryTree(r, e, t, i, s, h = this.currentDir) {
+        return n(this.qyCache.queryFiles(r, e, i, s, h), t);
+    }
+    queryTreeMulti(r, e, t, i, s = this.currentDir) {
+        return n(this.qyCache.queryFilesMulti(r, t, i, s), e);
     }
     resetCurrentDir() {
         this.currentDir = void 0;
     }
+    fileListToTree(r, e) {
+        return n(r, e);
+    }
+}
+
+function n(r, t) {
+    var i, s = {};
+    for (i of r) {
+        var h, n = i.parentList;
+        let e = s;
+        for (h of n) {
+            var {
+                name: u,
+                fullPathHash: c
+            } = h;
+            let r = e.subdirMap;
+            r = r || (e.subdirMap = {}), e = (e = r[u]) || (r[u] = {
+                fullPathHash: c
+            });
+        }
+        let r = e.fileMap;
+        (r = r || (e.fileMap = {}))[i.name] = {
+            fileContent: i.view(t, !0),
+            fileContentKey: i.fileContentKey
+        };
+    }
+    return {
+        tree: s,
+        count: r.length
+    };
 }
 
 export {

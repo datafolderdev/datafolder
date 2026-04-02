@@ -14,39 +14,39 @@ import {
 } from "./QyUtils.js";
 
 async function P(e, r) {
-    let t = {};
-    for (var i of r.subdirList) {
-        let e = i.name;
+    let i = {};
+    for (var o of r.subdirList) {
+        let e = o.name;
         for (;r.getFile(e); ) e += "_d";
-        e = _(e), t[e] = {
-            x: i,
+        e = _(e), i[e] = {
+            x: o,
             count: 0
         };
     }
     await y(e);
-    var o, a = [], s = [];
+    var t, a = [], s = [];
     let n = {};
-    for (o of await w(e, {
+    for (t of await w(e, {
         withFileTypes: !0
     })) {
-        var u = o.name;
-        o.isFile() ? a.push(u) : (s.push(u), n[u] = 1);
+        var f = t.name;
+        t.isFile() ? a.push(f) : (s.push(f), n[f] = 1);
     }
-    var f, l, p, m, c, h = [];
-    for (f of s) t[f] || ((l = d((l = f) + "_d") || d(l.replace(/_d$/, ""))) ? (h.push(F(x(e, f), x(e, l))), 
-    t[l].count = 1) : h.push(v(x(e, f), {
+    var l, u, p, m, h, c = [];
+    for (l of s) i[l] || ((u = d((u = l) + "_d") || d(u.replace(/_d$/, ""))) ? (c.push(F(x(e, l), x(e, u))), 
+    i[u].count = 1) : c.push(v(x(e, l), {
         recursive: !0
     })));
-    for (p of a) r.getFile(p) || h.push(v(x(e, p)));
-    await Promise.all(h), h.length = 0;
-    for (m of r.fileList) h.push(g(x(e, _(m.name)), m.contentAsText, {
+    for (p of a) r.getFile(p) || c.push(v(x(e, p)));
+    await Promise.all(c), c.length = 0;
+    for (m of r.fileList) c.push(g(x(e, _(m.name)), m.contentAsText, {
         flush: !0
     }));
-    for (c in await Promise.all(h), h.length = 0, t) h.push(P(x(e, c), t[c].x));
+    for (h in await Promise.all(c), c.length = 0, i) c.push(P(x(e, h), i[h].x));
     function d(e) {
-        return e && 0 == t[e]?.count && !n[e] ? e : void 0;
+        return e && 0 == i[e]?.count && !n[e] ? e : void 0;
     }
-    await Promise.all(h);
+    await Promise.all(c);
 }
 
 function _(e) {

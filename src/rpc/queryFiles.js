@@ -6,5 +6,5 @@ module.exports = queryText => {
         limit,
         cursor
     } = eval("((x)=>x)(" + queryText + ")");
-    return qyDB.fileListToTree(qyDB.queryFiles(folder, value, limit, cursor), view);
+    return dataFolder.queryTree(folder, value, view, limit, cursor);
 };

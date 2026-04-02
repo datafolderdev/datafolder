@@ -8,7 +8,7 @@ import {
     getContentKey as i,
     isNotNullObj as a,
     isSimpleType as C,
-    fromSingleName as s
+    fromSingleName as o
 } from "./QyUtils.js";
 
 import {
@@ -16,25 +16,28 @@ import {
 } from "./QyFileContentUtils.js";
 
 import {
-    QyIndexPropTree as f
+    QyIndexPropTree as s
 } from "./QyIndexPropTree.js";
 
-let d = Array.isArray, u = n.IndexPropPathsFileName, {
+let d = Array.isArray, f = n.IndexPropPathsFileName, {
     $spec: h,
     $raw: c,
     $clone: l
 } = t;
 
-class o extends e {
-    constructor(e, t, n) {
-        super(e, t, n), t && (++n._fileCount, ++n.fileMapChangeCount), this.cChangeId = 0;
+class u extends e {
+    _fileContentKey;
+    _fileContent;
+    cChangeId = 0;
+    constructor(e, t = !1, n) {
+        super(e, t, n), t && n && (++n._fileCount, ++n.fileMapChangeCount);
     }
     get created() {
         return this._created;
     }
     set created(e) {
         var t;
-        this._created != (e = !!e) && (this._created = e, t = this.parentDir, t._fileCount += e ? 1 : -1, 
+        this._created != (e = !!e) && (this._created = e, t = this.parentDir, t) && (t._fileCount += e ? 1 : -1, 
         ++t.fileMapChangeCount);
     }
     get fileContentKey() {
@@ -52,16 +55,16 @@ class o extends e {
     get qyIndexPropTree() {
         var {
             created: e,
-            _qyIndexPropTree: t,
-            name: n,
-            fileContent: i,
-            underHiddenFolder: r
+            name: t,
+            fileContent: n,
+            underHiddenFolder: i
         } = this;
-        if (e && r && n == u) {
-            if (t) return t;
-            var l, o = this._qyIndexPropTree = new f();
-            for (l in i) o.insert(s(l));
-            return o;
+        if (e && i && t == f) {
+            e = this._qyIndexPropTree;
+            if (e) return e;
+            var r, l = this._qyIndexPropTree = new s();
+            for (r in n) l.insert(o(r));
+            return l;
         }
     }
     get isFile() {
@@ -120,7 +123,7 @@ function p(e, t, n, i) {
     return t;
 }
 
-function y(e, t, n, i, r) {
+function y(e, t, n, i, r = !1) {
     let l = e.qyCache.getDir(n);
     if (d(t)) return t.map(e => p(l, e, i, r));
     if (a(t)) {
@@ -132,5 +135,5 @@ function y(e, t, n, i, r) {
 }
 
 export {
-    o as QyFile
+    u as QyFile
 };

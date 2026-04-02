@@ -1,15 +1,15 @@
 import {
-    join as c
+    join as m
 } from "node:path";
 
 import {
-    rm as m,
+    rm as c,
     rename as r,
-    readdir as d
+    readdir as h
 } from "node:fs/promises";
 
 import {
-    getDefaultOptions as o
+    getDefaultOptions as a
 } from "./QyDefaultOptions.js";
 
 import {
@@ -17,8 +17,8 @@ import {
 } from "./QyMessageWorker.js";
 
 import {
-    folderOrFileExists as f,
-    ensureDir as h
+    folderOrFileExists as d,
+    ensureDir as F
 } from "./QyUtils.js";
 
 import {
@@ -26,87 +26,100 @@ import {
     Zip_File_Extension as i
 } from "./QyCompressor.js";
 
-class s extends e {
+import {
+    logger as f
+} from "./QyLogger.js";
+
+import {
+    getInfoFileName as l
+} from "./QySnapshots.js";
+
+export default class extends e {
+    kvFolder;
+    snapshotFolder;
+    snapshotInfoFolder;
+    aclFolder;
+    historyAclFolder;
+    historySnapshotFolder;
     constructor({
         kvFolder: e,
         options: s
     }) {
         super(s = {
-            ...o("QyKVDataCleaner_Worker"),
+            ...a("QyKVDataCleaner_Worker"),
             ...s
-        }, [ "start", "stop" ], [ "cleanAclFiles", "cleanPMFiles", "cleanVLFiles", "removeSnapshotsFiles" ]);
-        var s = c(e, "history"), a = c(e, "snapshot");
+        }, [], [ "cleanAclFiles", "cleanPMFiles", "cleanVLFiles", "removeSnapshotsFiles" ]);
+        var s = m(e, "history"), o = m(e, "snapshot");
         Object.assign(this, {
             kvFolder: e,
-            snapshotFolder: a,
-            snapshotInfoFolder: c(a, "info"),
-            aclFolder: c(e, "acl"),
-            historyAclFolder: c(s, "acl"),
-            historySnapshotFolder: c(s, "snapshot")
+            snapshotFolder: o,
+            snapshotInfoFolder: m(o, "info"),
+            aclFolder: m(e, "acl"),
+            historyAclFolder: m(s, "acl"),
+            historySnapshotFolder: m(s, "snapshot")
         });
     }
     _op_start() {}
     _op_stop() {}
     async _op_cleanAclFiles(e) {
-        var s = this, a = e, e = s.aclFolder;
-        if (await f(e)) {
-            var o, r = [];
-            for (o of (await d(e)).filter(e => /^[1-9]/.test(e))) parseInt(o) <= a && r.push((async (e, s) => {
+        var s = this, o = e, e = s.aclFolder;
+        if (await d(e)) {
+            var a, r = [];
+            for (a of (await h(e)).filter(e => /^[1-9]/.test(e))) parseInt(a) <= o && r.push((async (e, s) => {
                 var {
-                    aclFolder: a,
-                    historyAclFolder: o
+                    aclFolder: o,
+                    historyAclFolder: a
                 } = e;
-                return await h(o), F(e, s, a, o);
-            })(s, o));
+                return await F(a), y(e, s, o, a);
+            })(s, a));
             0 < r.length && await Promise.allSettled(r);
         }
     }
     async _op_cleanPMFiles(e) {
         await Promise.allSettled(e.map(([ e, s ]) => {
-            return a = this, o = e, r = s, Promise.all([ "pM", "prefixPM" ].map(e => l(a, o, r, e)));
-            var a, o, r;
+            return o = this, a = e, r = s, Promise.all([ "pM", "prefixPM" ].map(e => n(o, a, r, e)));
+            var o, a, r;
         }));
     }
     async _op_cleanVLFiles(e, s) {
-        await l(this, e, s, "vL");
+        await n(this, e, s, "vL");
     }
     async _op_removeSnapshotsFiles(e) {
         let {
-            snapshotFolder: s,
+            snapshotFolder: o,
             snapshotInfoFolder: a
         } = this;
-        await Promise.all(e.map(async e => {
-            await m(c(a, e + ".json")), await m(c(s, "" + e), {
+        await Promise.all(e.map(async ([ s, e ]) => {
+            await c(m(a, l(s, e))), await Promise.all([ "pM", "prefixPM", "vL" ].map(e => n(this, s, 1 / 0, e))), 
+            await c(m(o, "" + s), {
                 recursive: !0
             });
         }));
     }
 }
 
-function F(e, s, a, o) {
-    a = c(a, s), o = c(o, s);
-    return e.options.compressRedundantFile ? t(a, o + i, {
+function y(e, s, o, a) {
+    o = m(o, s), a = m(a, s);
+    return e.options.compressRedundantFile ? t(o, a + i, {
         override: !0,
         removeSrcAfterSuccess: !0
-    }) : (logger.info(`rename ${a} to ` + o), r(a, o));
+    }) : (f.info(`rename ${o} to ` + a), r(o, a));
 }
 
-async function l(s, a, o, r) {
+async function n(s, o, a, r) {
     var {
         snapshotFolder: e,
         historySnapshotFolder: t
-    } = s, i = c(e, "" + a);
-    if (await f(i)) {
+    } = s, i = m(e, "" + o);
+    if (await d(i)) {
         let e;
         var l, n = [];
-        for (l of await d(i)) {
+        for (l of await h(i)) {
             var p = new RegExp("^([0-9]+)_" + r).exec(l);
-            p && (p = parseInt(p[1])) < o && (1 == p ? (e || (e = c(t, "" + a), 
-            await h(e)), n.push(F(s, l, i, e))) : (p = c(i, l), logger.info("Removing " + p), 
-            n.push(m(p))));
+            p && (p = parseInt(p[1])) < a && (1 == p ? (e || (e = m(t, "" + o), 
+            await F(e)), n.push(y(s, l, i, e))) : (p = m(i, l), f.info("Removing " + p), 
+            n.push(c(p))));
         }
         0 < n.length && await Promise.allSettled(n);
     }
 }
-
-export default s;

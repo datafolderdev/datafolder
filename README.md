@@ -1,6 +1,16 @@
 # datafolder
 
-datafolder is a lightweight JSON database, featuring an AI-friendly API for simple and human maintainable code generation, millisecond data response, with full index and trigger features supported, and the unique ability to browse and manage data as a folder tree directly in your browser. It works perfectly for a wide range of scenarios, from game/application backends to embedded systems to IoT to edge computing.
+datafolder is a lightning fluid JSON database for high speed SSDs, featuring an AI-friendly API for simple and human maintainable code generation, millisecond data response, with full index and trigger features supported, and the unique ability to browse and manage data as a folder tree directly in your browser. It works perfectly for a wide range of scenarios, from game/application backends to embedded systems to IoT to edge computing.
+
+### Changelog
+
+1.0.10 Added document [datafolder for high speed SSDs](https://github.com/datafolderdev/datafolder/wiki/datafolder-for-high-speed-SSDs)
+
+1.0.9 Added Typescript type declarations.
+
+1.0.7 Added trigger editor and [Internals of datafolder](https://github.com/datafolderdev/datafolder/wiki/Internals-of-datafolder)
+
+1.0.6 Added code mirror as the query editor.
 
 ## Installation
 

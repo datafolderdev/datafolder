@@ -1,85 +1,97 @@
 import {
-    join as o
+    join as n,
+    basename as i
 } from "node:path";
 
 import {
-    readdir as n,
-    readFile as i
+    readdir as s
 } from "node:fs/promises";
 
 import {
     QyDB as e
 } from "./QyDB.js";
 
-logger.level = "info";
+import {
+    loadFileList as l
+} from "./QyUtils.js";
 
-let s = "D:\\exp\\HackerBook\\static-shards_json", w = new e({
-    fileLogLevel: "basic",
+import {
+    logger as u
+} from "./QyLogger.js";
+
+u.level = "info";
+
+let m = "D:\\exp\\HackerBook\\static-shards_json", j = new e("C:\\tmp\\hackernews", {
+    fileLogLevel: "none",
     maxInMemSnapshotCount: 1,
     snapshotMaxChangeCount: 2e3,
-    unloadMemInterval: 2e4
+    unloadMemInterval: 2e4,
+    noAcl: !0
 }), C = 100;
 
-function l(e, t) {
-    var a, r = {}, o = {};
-    for (a of e) {
+function c(e, t) {
+    var o, a = {}, r = {};
+    for (o of e) {
         var {
             parent_id: n,
             child_id: i
-        } = a;
-        let e = o[i], t = (e = e || (o[i] = {}), o[n]), r = (t = t || (o[n] = {})).children;
-        (r = r || (t.children = {}))[i] = e;
+        } = o;
+        let e = r[i], t = (e = e || (r[i] = {}), r[n]), a = (t = t || (r[n] = {})).children;
+        (a = a || (t.children = {}))[i] = e;
     }
-    var s, l, c, m = {};
+    var s, l, m, c = {};
     let d = 0, f = 0;
     for (s of t) {
         var {
-            id: h,
-            time: p,
-            parent: g
+            id: p,
+            time: h,
+            parent: v
         } = s;
-        if (null == g) {
-            p = (e => [ (e = new Date(1e3 * e)).getUTCFullYear(), e.getUTCMonth() + 1, e.getUTCDate() ])(p);
-            r[h] = p;
-            let e = o[h];
-            e ? e.item = s : e = o[h] = {
+        if (null == v) {
+            h = (e => [ (e = new Date(1e3 * e)).getUTCFullYear(), e.getUTCMonth() + 1, e.getUTCDate() ])(h);
+            a[p] = h;
+            let e = r[p];
+            e ? e.item = s : e = r[p] = {
                 item: s
-            }, m[h] = e, ++d;
+            }, c[p] = e, ++d;
         } else {
-            p = o[g];
-            if (p) {
-                let e = p.children, t = (e = e || (p.children = {}))[h];
-                t ? t.item = s : t = e[h] = {
+            h = r[v];
+            if (h) {
+                let e = h.children, t = (e = e || (h.children = {}))[p];
+                t ? t.item = s : t = e[p] = {
                     item: s
                 }, ++f;
-            } else logger.warn(h + `'s parent ${g} not exist.`);
+            } else u.warn(p + `'s parent ${v} not exist.`);
         }
     }
-    let v = 0;
-    for (l in m) {
-        var u = r[l];
-        w.batch.insert([ "hackernews", ...u, l ], m[l]), ++v >= C && (w.batch.run(), 
-        v = 0);
+    let g = 0;
+    for (l in c) {
+        var w = a[l];
+        j.batch.insert([ "hackernews", ...w, l ], c[l]), ++g >= C && (j.batch.run(), 
+        g = 0);
     }
-    for (c in 0 < v && w.batch.run(), m) !function e(t) {
+    for (m in 0 < g && j.batch.run(), c) !function e(t) {
         delete t.item;
-        let r = t.children;
-        for (var a in r) e(r[a]);
-    }(m[c]);
+        let a = t.children;
+        for (var o in a) e(a[o]);
+    }(c[m]);
 }
 
 (async () => {
-    if (process.argv[2] && (logger.level = process.argv[2]), console.time("run"), 
-    console.time("start"), await w.start(), console.timeEnd("start"), !w.dir("hackernews")) {
-        var e;
-        for (e of (await n(s)).map(e => /([0-9]+).json/.exec(e)[1]).sort((e, t) => e - t)) {
-            var t = `shard_${e}.json`, {
-                edges: r,
-                items: a
-            } = JSON.parse(await i(o(s, t)));
-            logger.warn(t), l(r, a);
+    if (process.argv[2] && (u.level = process.argv[2]), console.time("run"), console.time("start"), 
+    await j.start(), console.timeEnd("start"), !j.dir("hackernews")) {
+        var e, t, a = (await s(m)).map(e => /([0-9]+).json/.exec(e)[1]).sort((e, t) => e - t).map(e => n(m, `shard_${e}.json`));
+        for await ({
+            filePath: e,
+            bin: t
+        } of l(a)) {
+            var {
+                edges: o,
+                items: r
+            } = JSON.parse(t);
+            u.warn(i(e)), c(o, r);
         }
         await 0;
     }
-    console.time("stop"), await w.stop(), console.timeEnd("stop"), console.timeEnd("run");
+    console.time("stop"), await j.stop(), console.timeEnd("stop"), console.timeEnd("run");
 })();

@@ -11,11 +11,11 @@ import {
 } from "./QyBatch.js";
 
 import {
-    QyCache as a
+    QyCache as n
 } from "./QyCache.js";
 
 import {
-    getDefaultOptions as n
+    getDefaultOptions as a
 } from "./QyDefaultOptions.js";
 
 import {
@@ -30,21 +30,23 @@ import {
 let d = e(m, "../data/sampleDataFolder");
 
 class h extends t {
+    rootFolder;
+    options;
+    fetch;
+    batch;
+    _immediate;
     constructor(e = d, t) {
-        s(e) && (t = e, e = d), super(), Object.assign(this, {
-            rootFolder: e,
-            options: {
-                ...n("QyDB"),
-                ...t
-            }
-        });
+        s(e) && (t = e, e = d), super(), this.options = {
+            ...a("QyDB"),
+            ...t
+        }, this.rootFolder = e;
     }
     async start(e) {
         var t;
         return this.qyCache || (e = {
             ...this.options,
             ...e
-        }, t = new a(this.rootFolder, e, this), Object.assign(this, {
+        }, t = new n(this.rootFolder, e, this), Object.assign(this, {
             qyCache: t,
             fetch: new r(t),
             batch: new i(t, e),
@@ -58,8 +60,8 @@ class h extends t {
             batch: r,
             _immediate: i
         } = this;
-        e && (await e.stop(), t.qyCache = void 0, r.qyCache = void 0, i.qyCache = void 0, 
-        Object.assign(this, {
+        e && (await e.stop(), t && (t.qyCache = void 0), r && (r.qyCache = void 0), 
+        i && (i.qyCache = void 0), Object.assign(this, {
             qyCache: void 0,
             fetch: void 0,
             batch: void 0,
@@ -139,36 +141,10 @@ class h extends t {
         return this._immediate.removeRpc(e).run();
     }
     on(e, t) {
-        return this.qyCache.on(e, t);
+        return this.qyCache?.on(e, t);
     }
-    callRpc(e, t, r) {
-        return this.qyCache.callRpc(e, t, r);
-    }
-    fileListToTree(e, t) {
-        var r, i = t, a = {};
-        for (r of e) {
-            var n, s = r.parentList;
-            let t = a;
-            for (n of s) {
-                var {
-                    name: m,
-                    fullPathHash: d
-                } = n;
-                let e = t.subdirMap;
-                e = e || (t.subdirMap = {}), t = (t = e[m]) || (e[m] = {
-                    fullPathHash: d
-                });
-            }
-            let e = t.fileMap;
-            (e = e || (t.fileMap = {}))[r.name] = {
-                fileContent: r.view(i, !0),
-                fileContentKey: r.fileContentKey
-            };
-        }
-        return {
-            tree: a,
-            count: e.length
-        };
+    callRpc(e, t, r = void 0) {
+        return this.qyCache?.callRpc(e, t, r);
     }
 }
 

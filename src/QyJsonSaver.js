@@ -13,11 +13,11 @@ class r extends e {
             ...r
         });
     }
-    processAfterLoad(e, r) {
-        return JSON.parse(super.processAfterLoad(e, r));
+    processAfterLoad(e) {
+        return JSON.parse(super.processAfterLoad(e));
     }
-    processBeforeSave(e, r) {
-        return super.processBeforeSave(JSON.stringify(e), r);
+    processBeforeSave(e) {
+        return super.processBeforeSave(JSON.stringify(e));
     }
 }
 

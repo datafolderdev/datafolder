@@ -8,7 +8,7 @@ import {
 
 class s extends e {
     constructor(e, s, a) {
-        super(e, "QyKVDataCleaner_Worker.js", {
+        super(e, "QyKVDataCleaner_Worker", {
             kvFolder: s,
             options: a = {
                 ...r("QyKVDataCleaner"),

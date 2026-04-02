@@ -1,172 +1,172 @@
 import {
-    isNotNullObj as f,
-    arrayLast as u,
-    trimArrayTail as V,
+    isNotNullObj as a,
+    arrayLast as t,
+    trimArrayTail as g,
     isSimpleType as h,
-    SpecialOperators as n
+    SpecialOperators as r
 } from "./QyUtils.js";
 
-let m = Array.isArray, {
-    $del: y,
-    $rpl: p,
-    $ext: w
-} = n;
+let p = Array.isArray, {
+    $del: w,
+    $rpl: y,
+    $ext: m
+} = r;
 
-function i(n, e) {
-    if (null == e) return n;
-    if (e !== y) {
-        if (h(e)) return e;
-        var r = e[p];
-        if (null != r) return r;
-        if (null == n || h(n)) return e;
-        if (n != e) {
-            var l, t = m(n);
-            for (l in e) {
-                var u = i(n[l], e[l]);
-                null == u ? (delete n[l], t && V(n)) : n[l] = u;
+function i(r, n) {
+    if (null == n) return r;
+    if (n !== w) {
+        if (h(n)) return n;
+        var l = n[y];
+        if (null != l) return l;
+        if (null == r || h(r)) return n;
+        if (r != n) {
+            var e, u = p(r);
+            for (e in n) {
+                var t = i(r[e], n[e]);
+                null == t ? (delete r[e], u && g(r)) : r[e] = t;
             }
         }
-        return n;
+        return r;
     }
 }
 
-function a(n, e) {
-    if (e == y) return y;
-    if (null != e[p]) return e;
-    var r = n[p];
-    if (null != r) n[p] = i(r, e); else {
-        if (n == y) return {
-            [p]: S(e)
+function f(r, n) {
+    if (n == w) return w;
+    if (null != n[y]) return n;
+    var l = r[y];
+    if (null != l) r[y] = i(l, n); else {
+        if (r == w) return {
+            [y]: S(n)
         };
-        if (h(n) || h(e)) return e;
-        for (var l in e) {
-            var t = e[l], u = n[l];
-            n[l] = null == u ? t : a(u, t);
+        if (h(r) || h(n)) return n;
+        for (var e in n) {
+            var u = n[e], t = r[e];
+            r[e] = null == t ? u : f(t, u);
         }
     }
-    return n;
+    return r;
 }
 
-function e(n, e) {
-    let r = {
+function n(r, n) {
+    let l = {
         oldValue: {},
         newValue: {}
     };
-    n = C(n, e, [], 0, r);
-    return r.oldValue = S(r.oldValue, !0, !0), r.newValue = S(r.newValue, !1, !1), 
+    r = A(r, n, [], 0, l);
+    return l.oldValue = S(l.oldValue, !0, !0), l.newValue = S(l.newValue, !1, !1), 
     {
-        merged: n,
-        delta: r = r.oldValue || r.newValue ? r : void 0
+        merged: r,
+        delta: l = l.oldValue || l.newValue ? l : void 0
     };
 }
 
-function C(e, r, l, t, u) {
-    if (null == r) return e;
-    if (r !== y) {
-        if (null == e || h(e) || h(r)) return A(e, r, l, u);
-        var i = r[p];
-        if (null != i) return A(e, i, l, u);
-        let n = r[w];
-        if (null != n) return m(n) || (n = [ n ]), (m(e) ? (e, r, n, l) => {
-            r = S(r);
-            var t = {};
-            for (let n = 0; n < r.length; ++n) {
-                var u = r[n];
-                null != u && (t[n + e.length] = h(u) ? u : {
-                    [p]: u
-                });
-            }
-            return N(l, n, e, t), e.concat(r);
-        } : A)(e, n, l, u);
-        if (m(e) && !m(r) || !m(e) && m(r)) return A(e, r, l, u);
-        var a = e, f = r, o = l, v = t, s = u;
-        if (a != f) {
-            var d, c = m(a);
-            for (d in f) {
-                o[v] = d, o.length = v + 1;
-                var g = C(a[d], f[d], o, v + 1, s);
-                null == g ? (delete a[d], c && V(a)) : a[d] = g;
-            }
+function u(r, n, l) {
+    if (!n || 0 == n.length) return l;
+    let e = r;
+    for (let r = 0; r < n.length - 1; ++r) {
+        var u = n[r];
+        a(e[u]) || (e[u] = {}), e = e[u];
+    }
+    return e[t(n)] = l, r;
+}
+
+function l(r, n) {
+    if (null != n && null != (r = o(r))) {
+        if (!p(n)) return "" == n ? r : o(r[n]);
+        if (0 != n.length && (1 != n.length || "" != n[0])) for (var l of n) if (null == (r = o(r[l]))) return;
+        return r;
+    }
+}
+
+function S(r, n = !0, l = !1) {
+    return function l(e, u, t) {
+        if (e instanceof Date) return e.toISOString();
+        if (!a(e)) return (t ? void 0 === e : null == e) || u && e === w ? void 0 : e;
+        if (u) {
+            let r = e[y];
+            if (null != r) return l(r, u, t);
+            let n = e[m];
+            if (null != n) return l(p(n) ? n : [ n ], u, t);
         }
-        return a;
-    }
-    null != e && N(u, l, e, y);
-}
-
-function A(n, e, r, l) {
-    e = S(e);
-    return n === e ? n : null != e ? (null == n ? N(l, r, 0 == r.length ? void 0 : null, h(e) ? e : {
-        [p]: e
-    }) : N(l, r, n, h(n) ? e : {
-        [p]: e
-    }), e) : void N(l, r, n, y);
-}
-
-function N(n, e, r, l) {
-    n.oldValue = t(n.oldValue, e, r), n.newValue = t(n.newValue, e, l);
-}
-
-function t(n, e, r) {
-    if (!e || 0 == e.length) return r;
-    let l = n;
-    for (let n = 0; n < e.length - 1; ++n) {
-        var t = e[n];
-        f(l[t]) || (l[t] = {}), l = l[t];
-    }
-    return l[u(e)] = r, n;
-}
-
-function r(n, e) {
-    if (null != e && null != (n = l(n))) {
-        if (!m(e)) return "" == e ? n : l(n[e]);
-        if (0 != e.length && (1 != e.length || "" != e[0])) for (var r of e) if (null == (n = l(n[r]))) return;
-        return n;
-    }
-}
-
-function l(n) {
-    if (null != n && n != y) {
-        for (;null != n[p]; ) if ((n = n[p]) == y) return;
-        return n;
-    }
-}
-
-function S(n, e = !0, r = !1) {
-    return function r(l, t, u) {
-        if (l instanceof Date) return l.toISOString();
-        if (!f(l)) return (u ? void 0 === l : null == l) || t && l === y ? void 0 : l;
-        if (t) {
-            let n = l[p];
-            if (null != n) return r(n, t, u);
-            let e = l[w];
-            if (null != e) return r(m(e) ? e : [ e ], t, u);
-        }
-        let e = m(l);
+        let n = p(e);
         let i = !0;
-        for (var a in l) {
-            let n = r(l[a], t, u);
-            (u ? void 0 === n : null == n) ? (delete l[a], e && V(l)) : (l[a] = n, 
+        for (var f in e) {
+            let r = l(e[f], u, t);
+            (t ? void 0 === r : null == r) ? (delete e[f], n && g(e)) : (e[f] = r, 
             i = !1);
         }
-        return i ? void 0 : l;
-    }(n, e, r);
+        return i ? void 0 : e;
+    }(r, n, l);
 }
 
-function o(n) {
-    if (h(n)) return n ? y : void 0;
-    for (var e in n) {
-        var r = o(n[e]);
-        r ? n[e] = r : delete n[e];
+function e(r) {
+    if (h(r)) return r ? w : void 0;
+    for (var n in r) {
+        var l = e(r[n]);
+        l ? r[n] = l : delete r[n];
     }
-    return m(n) && V(n), n;
+    return p(r) && g(r), r;
+}
+
+function A(n, l, e, u, t) {
+    if (null == l) return n;
+    if (l !== w) {
+        if (null == n || h(n) || h(l)) return O(n, l, e, t);
+        var i = l[y];
+        if (null != i) return O(n, i, e, t);
+        let r = l[m];
+        if (null != r) return p(r) || (r = [ r ]), (p(n) ? (n, l, r, e) => {
+            l = S(l);
+            var u = {};
+            for (let r = 0; r < l.length; ++r) {
+                var t = l[r];
+                null != t && (u[r + n.length] = h(t) ? t : {
+                    [y]: t
+                });
+            }
+            return $(e, r, n, u), n.concat(l);
+        } : O)(n, r, e, t);
+        if (p(n) && !p(l) || !p(n) && p(l)) return O(n, l, e, t);
+        var f = n, a = l, o = e, v = u, d = t;
+        if (f != a) {
+            var c, s = p(f);
+            for (c in a) {
+                o[v] = c, o.length = v + 1;
+                var V = A(f[c], a[c], o, v + 1, d);
+                null == V ? (delete f[c], s && g(f)) : f[c] = V;
+            }
+        }
+        return f;
+    }
+    null != n && $(t, e, n, w);
+}
+
+function O(r, n, l, e) {
+    n = S(n);
+    return r === n ? r : null != n ? (null == r ? $(e, l, 0 == l.length ? void 0 : null, h(n) ? n : {
+        [y]: n
+    }) : $(e, l, r, h(r) ? n : {
+        [y]: n
+    }), n) : void $(e, l, r, w);
+}
+
+function $(r, n, l, e) {
+    r.oldValue = u(r.oldValue, n, l), r.newValue = u(r.newValue, n, e);
+}
+
+function o(r) {
+    if (null != r && r != w) {
+        for (;null != r[y]; ) if ((r = r[y]) == w) return;
+        return r;
+    }
 }
 
 export {
     i as mergeContent,
-    e as mergeContentAndGenDelta,
-    a as mergeContentChanges,
-    t as setValByNamePath,
-    r as getValByNamePath,
+    f as mergeContentChanges,
+    n as mergeContentAndGenDelta,
+    u as setValByNamePath,
+    l as getValByNamePath,
     S as cleanContent,
-    o as objToDelMarks
+    e as objToDelMarks
 };

@@ -1,16 +1,16 @@
-let h = new Error("No such dir");
+let s = new Error("No such dir");
 
 module.exports = ({
-    dirPath: e,
-    dChangeId: a,
-    fChangeId: d
+    dirPath: a,
+    dChangeId: d,
+    fChangeId: e
 }) => {
-    var s, e = qyDB.dirP(e);
-    return e ? (s = {}, a || d || (s.fullPathHash = e.fullPathHash), a != e.dChangeId && Object.assign(s, {
-        subdirList: e.sortedSubdirList.map(e => e.name),
-        dChangeId: e.dChangeId
-    }), d != e.fChangeId && Object.assign(s, {
-        fileList: e.sortedFileList.map(e => e.name),
-        fChangeId: e.fChangeId
-    }), s) : h;
+    var r, a = dataFolder.dirP(a);
+    return a ? (r = {}, d || e || (r.fullPathHash = a.fullPathHash), d != a.dChangeId && Object.assign(r, {
+        subdirList: a.sortedSubdirList.map(a => a.name),
+        dChangeId: a.dChangeId
+    }), e != a.fChangeId && Object.assign(r, {
+        fileList: a.sortedFileList.map(a => a.name),
+        fChangeId: a.fChangeId
+    }), r) : s;
 };

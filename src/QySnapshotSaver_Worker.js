@@ -1,5 +1,5 @@
 import {
-    join as e
+    join as t
 } from "node:path";
 
 import {
@@ -18,7 +18,18 @@ import {
     QyKVDataCleaner as p
 } from "./QyKVDataCleaner.js";
 
-class s extends a {
+import {
+    logger as m
+} from "./QyLogger.js";
+
+export default class extends a {
+    kvFolder;
+    snapshotFolder;
+    qySnapshots;
+    qyKVDataCleaner;
+    aclKeyValueMap = {};
+    snapshotSavedChangeId = 0;
+    maxChangeId;
     constructor({
         kvFolder: a,
         options: s
@@ -26,124 +37,125 @@ class s extends a {
         super(s = {
             ...o("QySnapshotSaver_Worker"),
             ...s
-        }, [ "stop", "waitForSnapshotSaved" ]);
-        var t = e(a, "snapshot");
+        }, [], [ "waitForSnapshotSaved" ]);
+        var e = t(a, "snapshot");
         Object.assign(this, {
             kvFolder: a,
-            snapshotFolder: t,
-            qySnapshots: new n(t, s),
-            qyKVDataCleaner: new p(this, a, s),
-            aclKeyValueMap: {}
+            snapshotFolder: e,
+            qySnapshots: new n(e, s),
+            qyKVDataCleaner: new p(this, a, s)
         });
     }
-    start(a, s, t) {
-        this.maxChangeId = a, this.qyKVDataCleaner.start(), s && this.waitForSnapshotSaved(h(this, s, a, t));
+    _op_start(a, s, e) {
+        this.maxChangeId = a, this.qyKVDataCleaner.start(), s && this.waitForSnapshotSaved(h(this, s, a, e));
     }
-    castSave(a, s, t) {
+    castSave(a, s, e) {
         var {
-            aclKeyValueMap: e,
+            aclKeyValueMap: t,
             qySnapshots: o
         } = this;
-        o.applyCmdObj(s, e, t), this.maxChangeId = a;
+        o.applyCmdObj(s, t, e), this.maxChangeId = a;
     }
     async saveSnapshot(a) {
         var {
             maxChangeId: s,
-            aclKeyValueMap: t
+            aclKeyValueMap: e
         } = this;
-        this.aclKeyValueMap = {}, this.waitForSnapshotSaved(h(this, a, s, t));
+        this.aclKeyValueMap = {}, this.waitForSnapshotSaved(h(this, a, s, e));
     }
     releaseSnapshot(a) {
-        var s, t = this.qySnapshots, {
-            numToSnapshotMap: e,
+        var s, e = this.qySnapshots, {
+            numToSnapshotMap: t,
             keyToSnapshotMap: o
-        } = t, e = e[a], a = e.keyValueMap;
-        for (s in delete e.keyValueMap, a) delete o[s];
-        t.delSnapshot(e), global.gc && global.gc();
+        } = e, t = t[a], a = t.keyValueMap;
+        for (s in delete t.keyValueMap, a) delete o[s];
+        e.delSnapshot(t), global.gc && global.gc();
     }
     async _op_stop() {
         var {
             qySnapshots: a,
-            qyKVDataCleaner: s
+            qyKVDataCleaner: s,
+            snapshotSavedChangeId: e
         } = this;
-        a.closeAllFDs(), await s.stop();
+        return a.closeAllFDs(), await s.stop(), e;
     }
     async _op_waitForSnapshotSaved({
         saveMaxSnapshotInfoPromise: a,
         outdates: s
     }) {
-        var t, {
+        var e, {
             snapshotNum: a,
-            maxChangeId: e
+            maxChangeId: t
         } = await a, {
-            emptySnapshotNumList: s,
+            emptySnapshotNumVerList: s,
             pMChangeList: o,
             vLChange: n,
             snapshotInfoMap: p,
             promises: h
-        } = s, {
+        } = (this.snapshotSavedChangeId = t, s), {
             qyKVDataCleaner: r,
             qySnapshots: i,
             options: l
         } = this;
-        for (t in r.cleanAclFiles(a), 0 < h.length && await Promise.all(h), h.length = 0, 
-        p) h.push(i.saveSnapshotInfo(t, p[t]));
-        0 < h.length && await Promise.all(h), 0 < s.length && r.removeSnapshotsFiles(s), 
+        for (e in r.cleanAclFiles(a), 0 < h.length && (await Promise.all(h), h.length = 0), 
+        p) h.push(i.saveSnapshotInfo(e, p[e]));
+        0 < h.length && (await Promise.all(h), h.length = 0), 0 < s.length && r.removeSnapshotsFiles(s), 
         0 < o.length && r.cleanPMFiles(o), 0 < n.length && r.cleanVLFiles(n[0], n[1]);
         let u;
         a = i.snapshotCount;
         0 < a && a >= l.maxInMemSnapshotCount && (delete (s = (a => {
-            let s = a.qySnapshots.numToSnapshotMap, t;
-            for (var e in s) {
-                var o = s[e];
-                (!t || t.snapshotNum > e) && (t = o);
+            let s = a.qySnapshots.numToSnapshotMap, e;
+            for (var t in s) {
+                var o = s[t];
+                (!e || e.snapshotNum > t) && (e = o);
             }
-            return t;
+            return e;
         })(this)).prefixPM, delete (u = {
             ...s
-        }).keyValueMap, delete s.posMap, s.isOut = !0, logger.info("Sending snapshot " + s.snapshotNum)), 
-        this.castParent("onSnapshotSavedChangeId", e, u);
+        }).keyValueMap, delete s.posMap, s.isOut = !0, m.info("Sending snapshot " + s.snapshotNum)), 
+        this.castParent("onSnapshotSavedChangeId", t, u);
     }
 }
 
-function h(a, s, t, e) {
+function h(a, s, e, t) {
     var o = (a => {
-        var s, t = a.qySnapshots, {
-            emptySnapshotNumList: e,
+        var s, e = a.qySnapshots, {
+            emptySnapshotNumVerList: t,
             combiningSnapshotList: a,
             pMCompactSnapshotList: o
-        } = t.calOutdates(), n = {}, p = [], h = [], r = [];
+        } = e.calOutdates(), n = {}, p = [], h = [], r = [];
         for (s of o) {
             var {
                 snapshotNum: i,
                 info: l
             } = s;
-            p.push(t.savePosMap(s)), h.push([ i, l.pMVersion ]), n[i] = {
+            p.push(e.savePosMap(s)), h.push([ i, l.pMVersion ]), n[i] = {
                 ...l
             };
         }
         let u = a.length, m;
         if (0 < u) {
-            var S, y = t.keyToSnapshotMap, {
-                keyValueMap: d,
+            var S, d = e.keyToSnapshotMap, {
+                keyValueMap: y,
                 info: o,
                 snapshotNum: v
-            } = m = t.getMaxCombinedSnapshot(a);
+            } = m = e.getMaxCombinedSnapshot(a);
             for (S of a) if (m != S) {
                 var g, {
                     keyValueMap: M,
-                    snapshotNum: f
+                    snapshotNum: f,
+                    info: C
                 } = S;
-                for (g in M) d[g] = M[g], y[g] = m;
-                t.delSnapshot(S), e.push(f);
+                for (g in M) y[g] = M[g], d[g] = m;
+                e.delSnapshot(S), t.push([ f, C.verList[0] ]);
             }
-            p.push(t.saveKeyValueMap(m)), h.push([ v, o.pMVersion ]), r.push(v, o.vLVersion), 
+            p.push(e.saveKeyValueMap(m)), h.push([ v, o.pMVersion ]), r.push(v, o.vLVersion), 
             n[v] = {
                 ...o
             };
         }
         return {
-            emptySnapshotNumList: e,
+            emptySnapshotNumVerList: t,
             pMChangeList: h,
             vLChange: r,
             snapshotInfoMap: n,
@@ -151,29 +163,27 @@ function h(a, s, t, e) {
         };
     })(a), s = {
         snapshotNum: s,
-        keyValueMap: e,
+        keyValueMap: t,
         outdatedCount: 0,
         info: {
-            maxChangeId: t,
+            maxChangeId: e,
             pMVersion: 0,
-            vLVersion: 0
+            vLVersion: 0,
+            verList: []
         }
-    }, e = (a.qySnapshots.addMaxSnapshot(s), (async (a, s) => {
+    }, t = (a.qySnapshots.addMaxSnapshot(s), (async (a, s) => {
         await (a = a.qySnapshots).saveKeyValueMap(s);
         var {
             snapshotNum: s,
-            info: t
+            info: e
         } = s;
-        return await a.saveSnapshotInfo(s, t), logger.log("Created snapshot " + s), 
-        {
+        return await a.saveSnapshotInfo(s, e), m.log("Created snapshot " + s), {
             snapshotNum: s,
-            maxChangeId: t.maxChangeId
+            maxChangeId: e.maxChangeId
         };
     })(a, s));
     return {
-        saveMaxSnapshotInfoPromise: e,
+        saveMaxSnapshotInfoPromise: t,
         outdates: o
     };
 }
-
-export default s;

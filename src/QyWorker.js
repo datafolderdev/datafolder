@@ -1,5 +1,5 @@
 import {
-    isAbsolute as a,
+    isAbsolute as n,
     join as m
 } from "node:path";
 
@@ -13,31 +13,31 @@ import {
 } from "./QyLogger.js";
 
 import {
-    setPromise as k,
-    __dirname as d
+    setPromise as d,
+    __dirname as f
 } from "./QyUtils.js";
 
-function e(e, r) {
+function e(e, o) {
     p("logLevel", g.level);
-    var o = r.operation;
-    let t = e + " " + o, {
+    var r = o.operation;
+    let t = e + " " + r, {
         promise: s,
         resolve: i
-    } = (g.info("Starting worker " + t), k({}));
-    a(e) || (e = m(d, e));
-    o = new l(e, {
-        workerData: r
+    } = (g.info("Starting worker " + t), d({}));
+    n(e) || (e = m(f, e));
+    r = new l(e, {
+        workerData: o
     });
-    let n;
-    return o.on("message", e => {
-        n = !0, i(e);
-    }), o.on("error", e => {
-        n = !0, i(e);
-    }), o.on("exit", e => {
-        n ? g.info(`Worker ${t} exited.`) : (g.log(`Worker ${t} stopped with exitCode ` + e), 
+    let a;
+    return r.on("message", e => {
+        a = !0, i(e);
+    }), r.on("error", e => {
+        a = !0, i(e);
+    }), r.on("exit", e => {
+        a ? g.info(`Worker ${t} exited.`) : (g.log(`Worker ${t} stopped with exitCode ` + e), 
         i());
     }), {
-        worker: o,
+        worker: r,
         promise: s
     };
 }

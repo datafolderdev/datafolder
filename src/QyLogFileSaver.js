@@ -8,10 +8,10 @@ import {
 
 class s extends e {
     constructor(e, s) {
-        super(e, "QyLogFileSaver_Worker.js", s = {
+        super(e, "QyLogFileSaver_Worker", s = {
             ...r("QyLogFileSaver"),
             ...s
-        }, s, [ "switch" ], [ "save" ]);
+        }, s, [], [ "switch", "save" ]);
     }
 }
 

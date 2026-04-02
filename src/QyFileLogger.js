@@ -1,37 +1,40 @@
 import {
-    join as a
+    join as r
 } from "node:path";
 
 import {
-    setFileConsoleDateDirPath as e,
-    closeFileConsole as t
-} from "./QyLogger.js";
-
-import {
-    ensureDir as i
+    ensureDir as e
 } from "./QyUtils.js";
 
 import {
-    getDefaultOptions as s
+    getDefaultOptions as i
 } from "./QyDefaultOptions.js";
 
 import {
-    QyOpRunner as o
+    QyOpRunner as t
 } from "./QyOpRunner.js";
 
 import {
-    QyLogFileSaver as r
+    QyLogFileSaver as s
 } from "./QyLogFileSaver.js";
 
-class n extends o {
+import {
+    logger as o
+} from "./QyLogger.js";
+
+class a extends t {
+    qyLogFileSaver;
+    logFileFolder;
+    dateDirPath;
+    timeoutRef;
     constructor(t, e) {
         (e = {
-            ...s("QyFileLogger"),
+            ...i("QyFileLogger"),
             ...e
-        }).append = !e.clearLogAtStart, super(e, [ "stop" ], [ "startFileConsole", "switchFileConsole" ]), 
+        }).append = !e.clearLogAtStart, super(e, [], [ "startFileConsole", "switchFileConsole" ]), 
         Object.assign(this, {
             logFileFolder: t,
-            qyLogFileSaver: new r(this, e)
+            qyLogFileSaver: new s(this, e)
         });
     }
     save(t, e) {
@@ -40,41 +43,42 @@ class n extends o {
     getDateDirPath() {
         return this.dateDirPath;
     }
-    async start() {
-        var t = new Date(), t = (this.timeoutRef = setTimeout(this.switch.bind(this), g(t)), 
-        this.dateDirPath = h(this, t));
-        this.qyLogFileSaver.start(a(t, "change.txt")), await this.startFileConsole(t);
+    async _op_start() {
+        var t = new Date(), t = (this.timeoutRef = setTimeout(this.switch.bind(this), h(t)), 
+        this.dateDirPath = n(this, t));
+        this.qyLogFileSaver.start(r(t, "change.txt")), await this.startFileConsole(t);
     }
     switch() {
-        var t = new Date(), t = (this.timeoutRef = setTimeout(this.switch.bind(this), g(t)), 
-        h(this, t));
-        return this.dateDirPath != t && (this.dateDirPath = t, this.qyLogFileSaver.switch(a(t, "change.txt")), 
+        var t = new Date(), t = (this.timeoutRef = setTimeout(this.switch.bind(this), h(t)), 
+        n(this, t));
+        return this.dateDirPath != t && (this.dateDirPath = t, this.qyLogFileSaver.switch(r(t, "change.txt")), 
         this.switchFileConsole(t)), this;
     }
     async _op_startFileConsole(t) {
-        await i(t), e(t, this.options.clearLogAtStart);
+        await e(t), o.setFileConsoleDateDirPath(t, this.options.clearLogAtStart);
     }
     async _op_stop() {
-        clearTimeout(this.timeoutRef), this.timeoutRef = void 0, t(), await this.qyLogFileSaver.stop();
+        this.timeoutRef && (clearTimeout(this.timeoutRef), this.timeoutRef = void 0), 
+        o.closeFileConsole(), await this.qyLogFileSaver.stop();
     }
     async _op_switchFileConsole(t) {
-        await i(t), e(t, this.options.clearLogAtStart);
+        await e(t), o.setFileConsoleDateDirPath(t, this.options.clearLogAtStart);
     }
 }
 
-function h(t, e) {
+function n(t, e) {
     var i = e.getUTCFullYear(), s = e.getUTCMonth() + 1, o = e.getUTCDate(), e = e.getUTCHours();
-    return a(t.logFileFolder, i.toString(), l(s), l(o), l(e));
+    return r(t.logFileFolder, i.toString(), l(s), l(o), l(e));
 }
 
 function l(t) {
     return t.toString().padStart(2, "0");
 }
 
-function g(t) {
+function h(t) {
     return 1e3 * (60 * (60 - t.getUTCMinutes()) - t.getUTCSeconds());
 }
 
 export {
-    n as QyFileLogger
+    a as QyFileLogger
 };

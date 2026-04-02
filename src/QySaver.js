@@ -1,9 +1,10 @@
 import s, {
-    readFile as i
+    readFile as a,
+    rm as e
 } from "node:fs/promises";
 
 import {
-    join as c
+    join as f
 } from "node:path";
 
 import {
@@ -23,7 +24,9 @@ import {
     getDefaultOptions as t
 } from "./QyDefaultOptions.js";
 
-class e {
+class i {
+    dataFolder;
+    options;
     constructor(e, r) {
         Object.assign(this, {
             dataFolder: e,
@@ -42,32 +45,40 @@ class e {
     processBeforeSave(e) {
         return r(e);
     }
-    async loadFromFile(e, r) {
-        var t = c(this.dataFolder, e);
-        if (null != r && !await u(t)) return r;
+    async removeFile(r) {
+        r = f(this.dataFolder, r);
         try {
-            var a = await i(t);
-            return m.info(`Loading "${t}" succeeded. Total size:${o(a.length)}.`), 
-            this.processAfterLoad(a, e);
+            await e(r);
         } catch (e) {
-            if (null != r) return r;
-            m.error(`Loading "${t}" failed:`, e);
+            m.warn(`Deleting ${r} failed:`, e);
+        }
+    }
+    async loadFromFile(r, t) {
+        r = f(this.dataFolder, r);
+        if (null != t && !await u(r)) return t;
+        try {
+            var e = await a(r);
+            return m.info(`Loading "${r}" succeeded. Total size:${o(e.length)}.`), 
+            this.processAfterLoad(e);
+        } catch (e) {
+            if (null != t) return t;
+            m.error(`Loading "${r}" failed:`, e);
         }
     }
     async saveToFile(e, t, r = !1) {
         var {
             dataFolder: a,
             options: i
-        } = this, s = c(a, t);
+        } = this, s = f(a, t);
         if (!r && await u(s)) m.error(s + " already exists."); else {
             var {
                 retryTimes: o,
                 retryIntervalFactor: n,
                 maxRetryInterval: l
-            } = i, d = c(a, ".tmp", t), f = this.processBeforeSave(e, t);
+            } = i, d = f(a, ".tmp", t), c = this.processBeforeSave(e);
             let r;
             for (let e = 0; e < o; ++e) {
-                if (await this._saveTmpFileAndRename(f, d, s)) return !0;
+                if (await this._saveTmpFileAndRename(c, d, s)) return !0;
                 r = r ? Math.min(l, r * n) : 1, m.warn(`Retrying to create ${s} in ${r} seconds.`), 
                 await g(r);
             }
@@ -102,5 +113,5 @@ class e {
 }
 
 export {
-    e as QySaver
+    i as QySaver
 };

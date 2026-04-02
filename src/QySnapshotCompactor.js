@@ -8,7 +8,7 @@ import {
 
 class s extends o {
     constructor(o, s, t) {
-        super(o, "QySnapshotCompactor_Worker.js", {
+        super(o, "QySnapshotCompactor_Worker", {
             kvFolder: s,
             options: t = {
                 ...a("QySnapshotCompactor"),
